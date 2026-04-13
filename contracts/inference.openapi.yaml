@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: Shared Inference Contract
+  version: 1.0.0
+paths:
+  /registry/self:
+    get:
+      tags:
+      - registry
+      summary: Registry Self
+      operationId: registry_self_registry_self_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Registry Self Registry Self Get
+  /infer/ground:
+    post:
+      tags:
+      - inference
+      summary: Infer Grounding
+      operationId: infer_grounding_infer_ground_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferenceRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InferenceRequest:
+      properties:
+        model_uri:
+          type: string
+          title: Model Uri
+        video_features_uri:
+          type: string
+          title: Video Features Uri
+        text_processed_uri:
+          type: string
+          title: Text Processed Uri
+        top_n:
+          type: integer
+          minimum: 1.0
+          title: Top N
+          default: 5
+      type: object
+      required:
+      - model_uri
+      - video_features_uri
+      - text_processed_uri
+      title: InferenceRequest
+    InferenceResponse:
+      properties:
+        segments:
+          items:
+            $ref: '#/components/schemas/TemporalSegment'
+          type: array
+          title: Segments
+      type: object
+      required:
+      - segments
+      title: InferenceResponse
+    TemporalSegment:
+      properties:
+        start_sec:
+          type: number
+          title: Start Sec
+        end_sec:
+          type: number
+          title: End Sec
+        score:
+          type: number
+          title: Score
+      type: object
+      required:
+      - start_sec
+      - end_sec
+      - score
+      title: TemporalSegment
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

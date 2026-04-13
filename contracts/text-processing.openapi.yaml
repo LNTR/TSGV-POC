@@ -1,0 +1,418 @@
+openapi: 3.1.0
+info:
+  title: Shared Text Processing Contract
+  version: 1.1.0
+paths:
+  /registry/self:
+    get:
+      tags:
+      - registry
+      summary: Registry Self
+      operationId: registry_self_registry_self_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Registry Self Registry Self Get
+  /text/batch:
+    post:
+      tags:
+      - text-processing
+      summary: Process Text Batch
+      operationId: process_text_batch_text_batch_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextBatchRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextBatchResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /jobs/process-text:
+    post:
+      tags:
+      - text-processing
+      summary: Process Text File
+      operationId: process_text_file_jobs_process_text_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessTextFileRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessTextFileResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /jobs/process-aligned-text:
+    post:
+      tags:
+      - text-processing
+      summary: Process Aligned Text
+      operationId: process_aligned_text_jobs_process_aligned_text_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessAlignedTextRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessAlignedTextResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    JobEnvelope:
+      type: object
+      additionalProperties: true
+      properties:
+        job_id:
+          type: string
+        trace_id:
+          type: string
+        dataset:
+          type: string
+        created_at:
+          type: string
+        version:
+          type: string
+      required:
+      - job_id
+      - trace_id
+      - dataset
+      - created_at
+      title: JobEnvelope
+    ProcessAlignedTextRequest:
+      properties:
+        job:
+          anyOf:
+          - $ref: '#/components/schemas/JobEnvelope'
+          - type: 'null'
+        input_alignment_uri:
+          type: string
+          title: Input Alignment Uri
+        artifact_uri:
+          type: string
+          title: Artifact Uri
+        video_features_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Video Features Uri
+        fps:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Fps
+          default: 30.0
+        row_indices:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+          title: Row Indices
+        base_name_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Base Name Prefix
+        output_split_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Output Split Uri
+        expected_representation:
+          anyOf:
+          - type: string
+            enum:
+            - token_ids
+            - sentence_embedding
+          - type: 'null'
+          description: Optional caller hint. Services may ignore it.
+      type: object
+      required:
+      - input_alignment_uri
+      - artifact_uri
+      title: ProcessAlignedTextRequest
+    ProcessAlignedTextResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        records:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Records
+      type: object
+      required:
+      - status
+      - metadata
+      - records
+      title: ProcessAlignedTextResponse
+    ProcessTextFileRequest:
+      properties:
+        job:
+          anyOf:
+          - $ref: '#/components/schemas/JobEnvelope'
+          - type: 'null'
+        input_text_uri:
+          type: string
+          title: Input Text Uri
+        artifact_uri:
+          type: string
+          title: Artifact Uri
+        start_time:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Start Time
+        end_time:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: End Time
+        base_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Base Name
+        video_features_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Video Features Uri
+        expected_representation:
+          anyOf:
+          - type: string
+            enum:
+            - token_ids
+            - sentence_embedding
+          - type: 'null'
+          description: Optional caller hint. Services may ignore it.
+        downstream_mode:
+          anyOf:
+          - type: string
+            enum:
+            - inference
+            - training
+          - type: 'null'
+          title: Downstream Mode
+        downstream_service_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Downstream Service Url
+        model_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model Uri
+        output_model_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Output Model Uri
+        top_n:
+          type: integer
+          title: Top N
+          default: 5
+        hyperparams:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Hyperparams
+        artifact_lookup_key:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Artifact Lookup Key
+      type: object
+      required:
+      - input_text_uri
+      - artifact_uri
+      title: ProcessTextFileRequest
+    ProcessTextFileResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        downstream:
+          additionalProperties: true
+          type: object
+          title: Downstream
+      type: object
+      required:
+      - status
+      - metadata
+      - downstream
+      title: ProcessTextFileResponse
+    SentenceEmbeddingBatchResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        representation_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - skip_thought_lookup
+          - sentence_embedding
+          - 'null'
+        sentence_embeddings:
+          items:
+            items:
+              type: number
+            type: array
+          type: array
+        embedding_shape:
+          items:
+            type: integer
+          type: array
+      required:
+      - sentence_embeddings
+      - embedding_shape
+      title: SentenceEmbeddingBatchResponse
+    TextBatchRequest:
+      properties:
+        sentences:
+          items:
+            items:
+              type: string
+            type: array
+          type: array
+          title: Sentences
+        artifact_uri:
+          type: string
+          title: Artifact Uri
+        expected_representation:
+          anyOf:
+          - type: string
+            enum:
+            - token_ids
+            - sentence_embedding
+          - type: 'null'
+          description: Optional caller hint. Services may ignore it.
+      type: object
+      required:
+      - sentences
+      - artifact_uri
+      title: TextBatchRequest
+    TextBatchResponse:
+      oneOf:
+      - $ref: '#/components/schemas/TokenBatchResponse'
+      - $ref: '#/components/schemas/SentenceEmbeddingBatchResponse'
+      description: |
+        Shared text batch response. TGN-style services usually return token ids,
+        while TALL-style services usually return sentence embeddings.
+      title: TextBatchResponse
+    TokenBatchResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        representation_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - token_ids
+          - 'null'
+        token_ids:
+          items:
+            items:
+              type: integer
+            type: array
+          type: array
+        lengths:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+        padded_shape:
+          anyOf:
+          - items:
+              type: integer
+            type: array
+          - type: 'null'
+      required:
+      - token_ids
+      title: TokenBatchResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

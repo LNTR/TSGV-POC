@@ -1,0 +1,403 @@
+openapi: 3.1.0
+info:
+  title: Shared Training Contract
+  version: 1.1.0
+paths:
+  /registry/self:
+    get:
+      tags:
+      - registry
+      summary: Registry Self
+      operationId: registry_self_registry_self_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Registry Self Registry Self Get
+  /jobs/train:
+    post:
+      tags:
+      - training
+      summary: Create Training Job
+      operationId: create_training_job_jobs_train_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainRequest'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /jobs/train-from-artifacts:
+    post:
+      tags:
+      - training
+      summary: Create Training From Artifacts Job
+      operationId: create_training_from_artifacts_job_jobs_train_from_artifacts_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainFromArtifactsRequest'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ArtifactReference:
+      type: object
+      additionalProperties: true
+      properties:
+        uri:
+          type: string
+        artifact_type:
+          type:
+          - string
+          - 'null'
+        representation:
+          type:
+          - string
+          - 'null'
+      required:
+      - uri
+      title: ArtifactReference
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HyperParameterCommon:
+      type: object
+      additionalProperties: true
+      properties:
+        batch_size:
+          type: integer
+          minimum: 1
+        lr:
+          type: number
+        log_every:
+          type: integer
+          minimum: 1
+          default: 10
+        max_iter:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        valid_niter:
+          type: integer
+          minimum: 1
+          default: 50
+        top_n_eval:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        patience:
+          type: integer
+          minimum: 0
+          default: 2
+        max_num_trial:
+          type: integer
+          minimum: 1
+          default: 3
+        lr_decay:
+          type: number
+          exclusiveMinimum: 0.0
+          default: 0.5
+      required:
+      - batch_size
+      - lr
+      title: HyperParameterCommon
+    JobAccepted:
+      properties:
+        status:
+          type: string
+          title: Status
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        artifacts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ArtifactReference'
+          description: Optional normalized artifact list. Legacy services may only populate metadata.
+        forwarded:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Forwarded
+        downstream:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Downstream
+      type: object
+      required:
+      - status
+      - metadata
+      title: JobAccepted
+    JobEnvelope:
+      type: object
+      additionalProperties: true
+      properties:
+        job_id:
+          type: string
+        trace_id:
+          type: string
+        dataset:
+          type: string
+        created_at:
+          type: string
+        version:
+          type: string
+      required:
+      - job_id
+      - trace_id
+      - dataset
+      - created_at
+      title: JobEnvelope
+    TallHyperParameters:
+      allOf:
+      - $ref: '#/components/schemas/HyperParameterCommon'
+      - type: object
+        additionalProperties: true
+        properties:
+          semantic_size:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          mlp_hidden_size:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          max_window_scales:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          context_size:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          positive_iou:
+            type:
+            - number
+            - 'null'
+            exclusiveMinimum: 0.0
+            maximum: 1.0
+          regression_weight:
+            type:
+            - number
+            - 'null'
+            minimum: 0.0
+          sample_every_sec:
+            type:
+            - number
+            - 'null'
+            exclusiveMinimum: 0.0
+          nms_threshold:
+            type:
+            - number
+            - 'null'
+            minimum: 0.0
+            maximum: 1.0
+        required:
+        - sample_every_sec
+      title: TallHyperParameters
+    TgnHyperParameters:
+      allOf:
+      - $ref: '#/components/schemas/HyperParameterCommon'
+      - type: object
+        additionalProperties: true
+        properties:
+          K:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          delta:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          threshold:
+            type:
+            - number
+            - 'null'
+          hidden_size_textual_lstm:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          hidden_size_visual_lstm:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          hidden_size_ilstm:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          word_embed_size:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          visual_feature_size:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          fps:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+          sample_rate:
+            type:
+            - integer
+            - 'null'
+            minimum: 1
+        required:
+        - K
+      title: TgnHyperParameters
+    TrainFromArtifactsRequest:
+      properties:
+        job:
+          anyOf:
+          - $ref: '#/components/schemas/JobEnvelope'
+          - type: 'null'
+        video_features_uri:
+          type: string
+          title: Video Features Uri
+        text_processed_uri:
+          type: string
+          title: Text Processed Uri
+        output_model_uri:
+          type: string
+          title: Output Model Uri
+        model_family:
+          type:
+          - string
+          - 'null'
+          enum:
+          - tgn
+          - tall
+          - 'null'
+          description: Optional hint for routing and validation.
+        hyperparams:
+          oneOf:
+          - $ref: '#/components/schemas/TgnHyperParameters'
+          - $ref: '#/components/schemas/TallHyperParameters'
+          - type: 'null'
+      type: object
+      required:
+      - video_features_uri
+      - text_processed_uri
+      - output_model_uri
+      title: TrainFromArtifactsRequest
+    TrainRequest:
+      properties:
+        job:
+          anyOf:
+          - $ref: '#/components/schemas/JobEnvelope'
+          - type: 'null'
+        train_split_uri:
+          type: string
+          title: Train Split Uri
+        val_split_uri:
+          type: string
+          title: Val Split Uri
+        features_root_uri:
+          type: string
+          title: Features Root Uri
+        output_model_uri:
+          type: string
+          title: Output Model Uri
+        model_family:
+          type:
+          - string
+          - 'null'
+          enum:
+          - tgn
+          - tall
+          - 'null'
+          description: Optional hint for routing and validation.
+        hyperparams:
+          oneOf:
+          - $ref: '#/components/schemas/TgnHyperParameters'
+          - $ref: '#/components/schemas/TallHyperParameters'
+      type: object
+      required:
+      - train_split_uri
+      - val_split_uri
+      - features_root_uri
+      - hyperparams
+      - output_model_uri
+      title: TrainRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

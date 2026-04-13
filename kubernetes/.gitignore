@@ -1,0 +1,15 @@
+# Local operator build outputs
+.tmp-k8s-build/
+**/.tmp-k8s-build/
+operator/.tmp-k8s-build/
+operator/bin/
+
+# Local Kubernetes credentials and overrides
+*.kubeconfig
+kubeconfig*
+*.local.yaml
+*.local.yml
+*.secret.yaml
+*.secret.yml
+*.secrets.yaml
+*.secrets.yml

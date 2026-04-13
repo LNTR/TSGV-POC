@@ -1,0 +1,85 @@
+apiVersion: registry.tsgv.io/v1alpha1
+kind: ModelRouter
+metadata:
+  name: tsgv-router
+spec:
+  activeModel: tgn
+  models:
+    tgn:
+      services:
+        visual-preprocessing-service:
+          serviceName: tgn-visual-preprocessing-service
+          port: 8001
+          implementationName: tgn-visual-preprocessing-service
+          compatibleModels:
+            - tgn
+        visual-feature-extraction-service:
+          serviceName: tgn-visual-feature-extraction-service
+          port: 8002
+          implementationName: tgn-visual-feature-extraction-service
+          compatibleModels:
+            - tgn
+        text-processing-service:
+          serviceName: tgn-text-processing-service
+          port: 8003
+          implementationName: tgn-text-processing-service
+          compatibleModels:
+            - tgn
+        training-service:
+          serviceName: tgn-training-service
+          port: 8004
+          implementationName: tgn-training-service
+          compatibleModels:
+            - tgn
+        inference-service:
+          serviceName: tgn-inference-service
+          port: 8005
+          implementationName: tgn-inference-service
+          compatibleModels:
+            - tgn
+        evaluation-service:
+          serviceName: tgn-evaluation-service
+          port: 8006
+          implementationName: tgn-evaluation-service
+          compatibleModels:
+            - tgn
+    foobar:
+      services:
+        visual-preprocessing-service:
+          serviceName: foobar-visual-preprocessing-service
+          port: 9001
+          implementationName: foobar-visual-preprocessing-service
+          compatibleModels:
+            - foobar
+        visual-feature-extraction-service:
+          serviceName: foobar-visual-feature-extraction-service
+          port: 9002
+          implementationName: foobar-visual-feature-extraction-service
+          compatibleModels:
+            - foobar
+        text-processing-service:
+          serviceName: tgn-text-processing-service
+          port: 8003
+          implementationName: tgn-text-processing-service
+          compatibleModels:
+            - tgn
+            - foobar
+          shared: true
+        training-service:
+          serviceName: foobar-training-service
+          port: 9004
+          implementationName: foobar-training-service
+          compatibleModels:
+            - foobar
+        inference-service:
+          serviceName: foobar-inference-service
+          port: 9005
+          implementationName: foobar-inference-service
+          compatibleModels:
+            - foobar
+        evaluation-service:
+          serviceName: foobar-evaluation-service
+          port: 9006
+          implementationName: foobar-evaluation-service
+          compatibleModels:
+            - foobar

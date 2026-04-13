@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: Shared Evaluation Contract
+  version: 1.0.0
+paths:
+  /registry/self:
+    get:
+      tags:
+      - registry
+      summary: Registry Self
+      operationId: registry_self_registry_self_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Registry Self Registry Self Get
+  /jobs/evaluate:
+    post:
+      tags:
+      - evaluation
+      summary: Evaluate
+      operationId: evaluate_jobs_evaluate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    EvaluationRequest:
+      properties:
+        job:
+          $ref: '#/components/schemas/JobEnvelope'
+        model_uri:
+          type: string
+          title: Model Uri
+        test_split_uri:
+          type: string
+          title: Test Split Uri
+        features_root_uri:
+          type: string
+          title: Features Root Uri
+        metrics:
+          items:
+            type: string
+          type: array
+          title: Metrics
+      type: object
+      required:
+      - job
+      - model_uri
+      - test_split_uri
+      - features_root_uri
+      - metrics
+      title: EvaluationRequest
+    EvaluationResponse:
+      properties:
+        job_id:
+          type: string
+          title: Job Id
+        scores:
+          additionalProperties:
+            type: number
+          type: object
+          title: Scores
+      type: object
+      required:
+      - job_id
+      - scores
+      title: EvaluationResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    JobEnvelope:
+      properties:
+        job_id:
+          type: string
+          title: Job Id
+        trace_id:
+          type: string
+          title: Trace Id
+        dataset:
+          type: string
+          title: Dataset
+        created_at:
+          type: string
+          title: Created At
+        version:
+          type: string
+          title: Version
+          default: v1
+      type: object
+      required:
+      - job_id
+      - trace_id
+      - dataset
+      - created_at
+      title: JobEnvelope
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

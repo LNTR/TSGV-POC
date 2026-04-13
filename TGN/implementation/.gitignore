@@ -1,0 +1,7 @@
+# Python runtime caches
+**/__pycache__/
+*.py[cod]
+
+# Local virtualenvs and test caches
+.venv/
+.pytest_cache/

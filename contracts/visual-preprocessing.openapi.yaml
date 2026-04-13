@@ -1,0 +1,322 @@
+openapi: 3.1.0
+info:
+  title: Shared Visual Preprocessing Contract
+  version: 1.1.0
+paths:
+  /registry/self:
+    get:
+      tags:
+      - registry
+      summary: Registry Self
+      operationId: registry_self_registry_self_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Registry Self Registry Self Get
+  /jobs/preprocess:
+    post:
+      tags:
+      - visual-preprocessing
+      summary: Create Preprocess Job
+      operationId: create_preprocess_job_jobs_preprocess_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreprocessRequest'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    ArtifactReference:
+      type: object
+      additionalProperties: true
+      properties:
+        uri:
+          type: string
+        artifact_type:
+          type: [string, 'null']
+        representation:
+          type: [string, 'null']
+        shape:
+          type: [array, 'null']
+          items:
+            type: integer
+      required:
+      - uri
+      title: ArtifactReference
+    ClipFeatureRecipe:
+      type: object
+      additionalProperties: true
+      properties:
+        strategy:
+          type: string
+          enum:
+            - clip_encoder
+        encoder:
+          type: [string, 'null']
+          description: 'Example: c3d'
+        clip_num_frames:
+          type: [integer, 'null']
+          minimum: 1
+        clip_frame_step:
+          type: [integer, 'null']
+          minimum: 1
+      required:
+      - strategy
+      title: ClipFeatureRecipe
+    DownstreamControl:
+      type: object
+      additionalProperties: true
+      properties:
+        mode:
+          type: [string, 'null']
+          enum:
+            - inference
+            - training
+        service_url:
+          type: [string, 'null']
+        model_uri:
+          type: [string, 'null']
+        output_model_uri:
+          type: [string, 'null']
+        top_n:
+          type: [integer, 'null']
+          minimum: 1
+        hyperparams:
+          type: [object, 'null']
+          additionalProperties: true
+      title: DownstreamControl
+    FrameFeatureRecipe:
+      type: object
+      additionalProperties: true
+      properties:
+        strategy:
+          type: string
+          enum:
+            - frame_encoder
+        encoder:
+          type: [string, 'null']
+          description: 'Example: vgg16'
+      required:
+      - strategy
+      title: FrameFeatureRecipe
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    JobAccepted:
+      properties:
+        status:
+          type: string
+          title: Status
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+        artifacts:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/ArtifactReference'
+          description: Optional normalized artifact list. Legacy services may only populate metadata.
+        forwarded:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Forwarded
+        downstream:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Downstream
+      type: object
+      required:
+      - status
+      - metadata
+      title: JobAccepted
+    JobEnvelope:
+      type: object
+      additionalProperties: true
+      properties:
+        job_id:
+          type: string
+        trace_id:
+          type: string
+        dataset:
+          type: string
+        created_at:
+          type: string
+        version:
+          type: string
+      required:
+      - job_id
+      - trace_id
+      - dataset
+      - created_at
+      title: JobEnvelope
+    NormalizeConfig:
+      properties:
+        mean:
+          anyOf:
+          - items:
+              type: number
+            type: array
+          - type: 'null'
+          title: Mean
+        std:
+          anyOf:
+          - items:
+              type: number
+            type: array
+          - type: 'null'
+          title: Std
+      type: object
+      title: NormalizeConfig
+    PreprocessRequest:
+      properties:
+        job:
+          anyOf:
+          - $ref: '#/components/schemas/JobEnvelope'
+          - type: 'null'
+        input_video_uri:
+          type: string
+          title: Input Video Uri
+        output_frame_size:
+          type: integer
+          minimum: 1
+          title: Output Frame Size
+        sample_every_sec:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Sample Every Sec
+        feature_service_url:
+          type: string
+          title: Feature Service Url
+        normalize:
+          $ref: '#/components/schemas/NormalizeConfig'
+        feature_recipe:
+          anyOf:
+          - $ref: '#/components/schemas/FrameFeatureRecipe'
+          - $ref: '#/components/schemas/ClipFeatureRecipe'
+          - type: 'null'
+          description: Preferred generalized feature extraction hint.
+        downstream:
+          anyOf:
+          - $ref: '#/components/schemas/DownstreamControl'
+          - type: 'null'
+        artifact_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Artifact Uri
+        top_n:
+          type: integer
+          minimum: 1
+          title: Top N
+          default: 5
+        hyperparams:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          description: Legacy downstream passthrough.
+        downstream_mode:
+          anyOf:
+          - type: string
+            enum:
+              - inference
+              - training
+          - type: 'null'
+          deprecated: true
+        downstream_service_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          deprecated: true
+        model_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          deprecated: true
+        output_model_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          deprecated: true
+        encoder:
+          anyOf:
+          - type: string
+          - type: 'null'
+          deprecated: true
+          description: Legacy flat form of feature_recipe.encoder.
+        clip_num_frames:
+          anyOf:
+          - type: integer
+            minimum: 1
+          - type: 'null'
+          deprecated: true
+        clip_frame_step:
+          anyOf:
+          - type: integer
+            minimum: 1
+          - type: 'null'
+          deprecated: true
+      type: object
+      required:
+      - input_video_uri
+      - output_frame_size
+      - sample_every_sec
+      - feature_service_url
+      title: PreprocessRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

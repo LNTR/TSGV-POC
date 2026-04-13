@@ -1,0 +1,159 @@
+name: tall-implementation
+
+services:
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  visual-preprocessing-service:
+    build:
+      context: .
+      dockerfile: visual-preprocessing-service/Dockerfile
+    environment:
+      IMPLEMENTATION_STORAGE_ROOT: /app/storage
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URI: mongodb://mongodb:27017/
+      SERVICE_REGISTRY_ENABLED: "true"
+      SERVICE_RUNTIME_PLATFORM: docker-compose
+      SERVICE_RUNTIME_NAMESPACE: implementation
+      SERVICE_MODEL_NAME: tall
+      SERVICE_IMPLEMENTATION_NAME: tall-visual-preprocessing-service
+      SERVICE_SELF_URL: http://visual-preprocessing-service:8001
+      FEATURE_SERVICE_TIMEOUT_SEC: "1800"
+    volumes:
+      - ./storage:/app/storage
+      - ./dataset:/app/dataset:ro
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mongodb
+      - redis
+      - visual-feature-extraction-service
+
+  visual-feature-extraction-service:
+    build:
+      context: .
+      dockerfile: visual-feature-extraction-service/Dockerfile
+    environment:
+      IMPLEMENTATION_STORAGE_ROOT: /app/storage
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URI: mongodb://mongodb:27017/
+      SERVICE_REGISTRY_ENABLED: "true"
+      SERVICE_RUNTIME_PLATFORM: docker-compose
+      SERVICE_RUNTIME_NAMESPACE: implementation
+      SERVICE_MODEL_NAME: tall
+      SERVICE_IMPLEMENTATION_NAME: tall-visual-feature-extraction-service
+      SERVICE_SELF_URL: http://visual-feature-extraction-service:8002
+      VISUAL_FEATURE_BATCH_SIZE: "1"
+      VISUAL_FEATURE_ALLOW_CPU_FALLBACK: "true"
+    volumes:
+      - ./storage:/app/storage
+      - ./dataset:/app/dataset:ro
+    ports:
+      - "8002:8002"
+    depends_on:
+      - mongodb
+      - redis
+      - training-service
+      - inference-service
+
+  text-processing-service:
+    build:
+      context: .
+      dockerfile: text-processing-service/Dockerfile
+    environment:
+      IMPLEMENTATION_STORAGE_ROOT: /app/storage
+      REDIS_URL: redis://redis:6379/0
+      MONGODB_URI: mongodb://mongodb:27017/
+      SERVICE_REGISTRY_ENABLED: "true"
+      SERVICE_RUNTIME_PLATFORM: docker-compose
+      SERVICE_RUNTIME_NAMESPACE: implementation
+      SERVICE_MODEL_NAME: tall
+      SERVICE_IMPLEMENTATION_NAME: tall-text-processing-service
+      SERVICE_SELF_URL: http://text-processing-service:8003
+    volumes:
+      - ./storage:/app/storage
+      - ./dataset:/app/dataset:ro
+    ports:
+      - "8003:8003"
+    depends_on:
+      - mongodb
+      - redis
+      - training-service
+      - inference-service
+
+  training-service:
+    build:
+      context: .
+      dockerfile: training-service/Dockerfile
+    environment:
+      IMPLEMENTATION_STORAGE_ROOT: /app/storage
+      MONGODB_URI: mongodb://mongodb:27017/
+      SERVICE_REGISTRY_ENABLED: "true"
+      SERVICE_RUNTIME_PLATFORM: docker-compose
+      SERVICE_RUNTIME_NAMESPACE: implementation
+      SERVICE_MODEL_NAME: tall
+      SERVICE_IMPLEMENTATION_NAME: tall-training-service
+      SERVICE_SELF_URL: http://training-service:8004
+    volumes:
+      - ./storage:/app/storage
+      - ./dataset:/app/dataset:ro
+    ports:
+      - "8004:8004"
+    depends_on:
+      - mongodb
+
+  inference-service:
+    build:
+      context: .
+      dockerfile: inference-service/Dockerfile
+    environment:
+      IMPLEMENTATION_STORAGE_ROOT: /app/storage
+      MONGODB_URI: mongodb://mongodb:27017/
+      SERVICE_REGISTRY_ENABLED: "true"
+      SERVICE_RUNTIME_PLATFORM: docker-compose
+      SERVICE_RUNTIME_NAMESPACE: implementation
+      SERVICE_MODEL_NAME: tall
+      SERVICE_IMPLEMENTATION_NAME: tall-inference-service
+      SERVICE_SELF_URL: http://inference-service:8005
+    volumes:
+      - ./storage:/app/storage
+      - ./dataset:/app/dataset:ro
+    ports:
+      - "8005:8005"
+    depends_on:
+      - mongodb
+
+  evaluation-service:
+    build:
+      context: .
+      dockerfile: evaluation-service/Dockerfile
+    environment:
+      IMPLEMENTATION_STORAGE_ROOT: /app/storage
+      INFERENCE_SERVICE_URL: http://inference-service:8005
+      MONGODB_URI: mongodb://mongodb:27017/
+      SERVICE_REGISTRY_ENABLED: "true"
+      SERVICE_RUNTIME_PLATFORM: docker-compose
+      SERVICE_RUNTIME_NAMESPACE: implementation
+      SERVICE_MODEL_NAME: tall
+      SERVICE_IMPLEMENTATION_NAME: tall-evaluation-service
+      SERVICE_SELF_URL: http://evaluation-service:8006
+    volumes:
+      - ./storage:/app/storage
+      - ./dataset:/app/dataset:ro
+    ports:
+      - "8006:8006"
+    depends_on:
+      - mongodb
+      - inference-service
+
+volumes:
+  mongodb-data:

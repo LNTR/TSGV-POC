@@ -1,0 +1,62 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: modelrouters.registry.tsgv.io
+spec:
+  group: registry.tsgv.io
+  scope: Namespaced
+  names:
+    plural: modelrouters
+    singular: modelrouter
+    kind: ModelRouter
+    shortNames:
+      - mr
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - activeModel
+                - models
+              properties:
+                activeModel:
+                  type: string
+                models:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      services:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          required:
+                            - serviceName
+                            - port
+                          properties:
+                            serviceName:
+                              type: string
+                            namespace:
+                              type: string
+                            port:
+                              type: integer
+                              minimum: 1
+                            implementationName:
+                              type: string
+                            compatibleModels:
+                              type: array
+                              items:
+                                type: string
+                            shared:
+                              type: boolean
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}

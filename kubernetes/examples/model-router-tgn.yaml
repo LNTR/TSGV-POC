@@ -1,0 +1,51 @@
+apiVersion: registry.tsgv.io/v1alpha1
+kind: ModelRouter
+metadata:
+  name: tsgv-router
+spec:
+  activeModel: tgn
+  models:
+    tgn:
+      services:
+        visual-preprocessing-service:
+          serviceName: tgn-visual-preprocessing-service
+          port: 8001
+        visual-feature-extraction-service:
+          serviceName: tgn-visual-feature-extraction-service
+          port: 8002
+        text-processing-service:
+          serviceName: tgn-text-processing-service
+          port: 8003
+        training-service:
+          serviceName: tgn-training-service
+          port: 8004
+        inference-service:
+          serviceName: tgn-inference-service
+          port: 8005
+        evaluation-service:
+          serviceName: tgn-evaluation-service
+          port: 8006
+    foobar:
+      services:
+        visual-preprocessing-service:
+          serviceName: foobar-visual-preprocessing-service
+          port: 9001
+        visual-feature-extraction-service:
+          serviceName: foobar-visual-feature-extraction-service
+          port: 9002
+        text-processing-service:
+          serviceName: tgn-text-processing-service
+          port: 8003
+          compatibleModels:
+            - tgn
+            - foobar
+          shared: true
+        training-service:
+          serviceName: foobar-training-service
+          port: 9004
+        inference-service:
+          serviceName: foobar-inference-service
+          port: 9005
+        evaluation-service:
+          serviceName: foobar-evaluation-service
+          port: 9006

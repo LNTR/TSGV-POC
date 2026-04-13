@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-router-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model-router-operator
+  template:
+    metadata:
+      labels:
+        app: model-router-operator
+    spec:
+      serviceAccountName: model-router-operator
+      containers:
+        - name: operator
+          image: model-router-operator:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MONGODB_URI
+              value: mongodb://mongodb:27017/
+            - name: MODEL_ROUTER_MONGODB_DATABASE
+              value: service_registry

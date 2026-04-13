@@ -1,0 +1,8 @@
+dataset
+storage
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+

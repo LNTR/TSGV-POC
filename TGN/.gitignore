@@ -1,0 +1,9 @@
+# Local tooling installed only for development/smoke tests.
+.tools/
+
+# Python cache directories can appear across the repo.
+**/__pycache__/
+*.py[cod]
+
+# Common local test/runtime caches.
+.pytest_cache/

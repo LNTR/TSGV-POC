@@ -1,0 +1,15 @@
+# Local datasets and derived data stay out of version control.
+videos/**
+texts/**
+train/**
+test/**
+val/**
+evaluation/**
+eval/**
+models/**
+model-data/**
+model_data/**
+
+# Keep the directory layout.
+!**/
+!**/.gitkeep

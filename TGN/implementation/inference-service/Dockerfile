@@ -9,7 +9,9 @@ COPY inference-service/requirements.txt ./requirements.txt
 RUN grep -v '^torch==' requirements.txt > requirements.docker.txt
 RUN pip install --no-cache-dir -r requirements.docker.txt
 RUN pip install --no-cache-dir \
-    --index-url https://download.pytorch.org/whl/cpu \
+    --default-timeout=1000 \
+    --retries 10 \
+    --index-url https://download.pytorch.org/whl/cu121 \
     torch==2.4.1
 
 COPY service_registry.py /app/service_registry.py

@@ -69,107 +69,13 @@ By default every service reads and writes under `implementation/storage`. You ca
 export IMPLEMENTATION_STORAGE_ROOT="$PWD/storage"
 ```
 
-## Quick Sanity Check
+Generated runtime outputs under `storage/` such as frames, visual features, split manifests, processed text, models, and inference/evaluation results are treated as local artifacts and are ignored by this implementation's `.gitignore`.
 
-To run a small end-to-end check on 5 bundled dataset examples:
+## Experiment Helpers
 
-```bash
-cd implementation
-python run_five_input_sanity.py
-```
+The previous ad hoc experiment runner scripts and their sample outputs have been removed. Use the individual services and split manifests directly for training, inference, and evaluation workflows.
 
-This script:
-
-- reuses `shared://features/visual/*.vf.pt` when available, or generates them from `dataset/videos/*.avi`
-- builds 5 timestamped training text artifacts from the first aligned row in each selected TSV
-- rebuilds 5 matching inference text artifacts with `start_time` and `end_time` set to `null`
-- trains a fresh model under `storage/models/`
-- runs grounding with the saved model and writes the results under `storage/results/`
-
-Useful options:
-
-- `--tag custom_name`
-- `--max-iter 15`
-- `--top-n 5`
-- `--rebuild-features`
-
-For a larger deterministic split run on the bundled dataset:
-
-```bash
-cd implementation
-python run_dataset_split_experiment.py
-```
-
-This script:
-
-- uses all paired files in `implementation/dataset/videos` and `implementation/dataset/texts`
-- creates a video-level `60% train / 20% val / 20% test` split
-- builds event-level text artifacts from the aligned TSV files
-- trains on the train split while validating on the val split
-- runs timestamp-free grounding on the held-out test split
-- writes simple held-out metrics to `storage/results/`
-
-## Service-Backed Example Run
-
-The Dockerized services were exercised on the `100` smallest paired dataset inputs by video file size.
-
-Video-level split:
-
-- train: `60` videos
-- val: `20` videos
-- test: `20` videos
-
-Event/query totals produced through the services:
-
-- train events: `1739`
-- val events: `597`
-- test queries: `555`
-
-Run settings:
-
-- frame size: `224`
-- sample every: `5s`
-- sample rate: `150` frames at `30 FPS`
-- training iterations: `60`
-- inference top-n: `5`
-
-Generated artifacts:
-
-- train split source manifest:
-  - `shared://splits/train/smallest100_by_video_size_train.json`
-- val split source manifest:
-  - `shared://splits/val/smallest100_by_video_size_val.json`
-- test split source manifest:
-  - `shared://splits/test/smallest100_by_video_size_test.json`
-- train event manifest:
-  - `shared://splits/train/smallest100_by_video_size_train_events.json`
-- val event manifest:
-  - `shared://splits/val/smallest100_by_video_size_val_events.json`
-- trained model:
-  - `shared://models/smallest100_by_video_size_service_train.bin`
-- optimizer state:
-  - `shared://models/smallest100_by_video_size_service_train.bin.optim`
-- training metrics:
-  - `shared://models/smallest100_by_video_size_service_train.bin.metrics.json`
-- test predictions:
-  - `shared://splits/test/smallest100_by_video_size_test_predictions.json`
-- test query manifest:
-  - `shared://results/smallest100_by_video_size_test_query_manifest.json`
-- test evaluation summary:
-  - `shared://results/smallest100_by_video_size_test_evaluation_summary.json`
-
-Observed results:
-
-- training best validation score: `0.5778894472361809`
-- held-out `R@1_IOU0.5`: `0.5009009009009009`
-- held-out `R@5_IOU0.5`: `0.6360360360360361`
-
-Operational notes from the real run:
-
-- The feature extraction service initially hit GPU memory pressure on the `GeForce 940MX` when it tried to encode all sampled frames at once. The implementation now uses chunked/adaptive batching in the visual feature extraction service, which allowed the run to complete on GPU-backed feature extraction.
-- The training service still trained on CPU in this run.
-- For container-to-container calls, do not use `127.0.0.1` as a downstream service URL inside request payloads. Inside Docker, use service DNS names such as `http://visual-feature-extraction-service:8002` or `http://inference-service:8005`.
-- In the held-out evaluation flow, it was safer to call `POST /jobs/process-text` first and then call `POST /infer/ground` explicitly from the host, instead of asking the text service container to forward to `http://127.0.0.1:8005`.
+For small smoke runs, prefer creating temporary manifests under `storage/splits/` and deleting the generated `storage/frames/`, `storage/features/`, `storage/text/processed/`, `storage/models/`, and `storage/results/` artifacts afterward.
 
 ## Run The Services
 
@@ -217,6 +123,14 @@ When `MONGODB_URI` is set, each service upserts a document in the `service_regis
 
 For Kubernetes-based active model switching, see [`kubernetes/README.md`](../kubernetes/README.md).
 
+For local GPU-backed runs, start Compose with the override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
+```
+
+That override enables CUDA for visual feature extraction, training, and inference.
+
 ## Where To Put Inputs
 
 The simplest approach is to use `shared://` URIs. These resolve relative to `implementation/storage/`.
@@ -246,7 +160,7 @@ The simplest approach is to use `shared://` URIs. These resolve relative to `imp
 
 You can also pass absolute paths or `file://` URIs instead of `shared://`.
 
-The `dataset/` folder is optional sample data for local experimentation. It is not used automatically by `shared://` URIs unless you copy files into `storage/` or reference `dataset/...` with an absolute path or `file://`.
+The repo-root `dataset/` folder is optional sample data for local experimentation. It is not used automatically by `shared://` URIs unless you copy files into `storage/` or reference `dataset/...` with an absolute path or `file://`.
 
 See [storage/README.md](storage/README.md) for the storage layout.
 
@@ -255,7 +169,7 @@ See [storage/README.md](storage/README.md) for the storage layout.
 Keep these files and folders:
 
 - All service source code folders
-- `dataset/videos/*` and `dataset/texts/*` if you want to keep the bundled sample data
+- `dataset/videos/*` and `dataset/texts/*` at the repo root if you want to keep the bundled sample data
 - `storage/README.md`
 - All `.gitkeep` files under `storage/`
 - `storage/artifacts/text/v1/vocab.json`
@@ -345,7 +259,7 @@ Prediction cache notes:
 
 ### 2a. Process An Aligned TSV File
 
-Use this when you want to preserve timestamped event annotations from files such as `dataset/texts/s13-d21.aligned.tsv`.
+Use this when you want to preserve timestamped event annotations from files such as `dataset/texts/s13-d21.aligned.tsv` in the repo root.
 
 This endpoint:
 
@@ -360,7 +274,7 @@ Example:
 curl -X POST http://127.0.0.1:8003/jobs/process-aligned-text \
   -H "Content-Type: application/json" \
   -d '{
-    "input_alignment_uri": "file:///absolute/path/to/implementation/dataset/texts/s13-d21.aligned.tsv",
+    "input_alignment_uri": "file:///absolute/path/to/dataset/texts/s13-d21.aligned.tsv",
     "artifact_uri": "shared://artifacts/text/v1",
     "video_features_uri": "shared://features/visual/s13-d21.vf.pt",
     "fps": 30,

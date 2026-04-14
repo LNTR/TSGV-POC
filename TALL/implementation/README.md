@@ -38,6 +38,8 @@ Optionally pin the storage root:
 export IMPLEMENTATION_STORAGE_ROOT="$PWD/storage"
 ```
 
+Generated runtime outputs under `storage/` such as frames, visual features, split manifests, processed text, models, and inference/evaluation results are treated as local artifacts and are ignored by this implementation's `.gitignore`.
+
 ## Training Inputs
 
 Training uses the same split manifest shape as `TGN`: a JSON list of records containing:
@@ -106,4 +108,4 @@ Use `shared://` URIs relative to `storage/`.
 - C3D weights: `shared://artifacts/video/c3d/c3d.pickle`
 - Trained model: `shared://models/tall.bin`
 
-The copied sample dataset was removed from this implementation scaffold so the architecture stays lightweight.
+The shared sample dataset now lives at the repo root in `dataset/`, and the Compose setup mounts it into containers at `/app/dataset`.

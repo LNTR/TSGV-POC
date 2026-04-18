@@ -1,0 +1,2 @@
+python TGN-smoke/run_compose_smoke_test.py --compose-managed --cleanup
+python TGN-smoke/run_compose_dataset_workflow.py --compose-managed --stats-interval-sec 1.0

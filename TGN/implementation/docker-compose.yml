@@ -15,8 +15,8 @@ services:
 
   visual-preprocessing-service:
     build:
-      context: .
-      dockerfile: visual-preprocessing-service/Dockerfile
+      context: ../..
+      dockerfile: TGN/implementation/visual-preprocessing-service/Dockerfile
     environment:
       IMPLEMENTATION_STORAGE_ROOT: /app/storage
       REDIS_URL: redis://redis:6379/0
@@ -40,8 +40,8 @@ services:
 
   visual-feature-extraction-service:
     build:
-      context: .
-      dockerfile: visual-feature-extraction-service/Dockerfile
+      context: ../..
+      dockerfile: TGN/implementation/visual-feature-extraction-service/Dockerfile
     environment:
       IMPLEMENTATION_STORAGE_ROOT: /app/storage
       REDIS_URL: redis://redis:6379/0
@@ -67,8 +67,8 @@ services:
 
   text-processing-service:
     build:
-      context: .
-      dockerfile: text-processing-service/Dockerfile
+      context: ../..
+      dockerfile: TGN/implementation/text-processing-service/Dockerfile
     environment:
       IMPLEMENTATION_STORAGE_ROOT: /app/storage
       REDIS_URL: redis://redis:6379/0
@@ -95,8 +95,8 @@ services:
 
   training-service:
     build:
-      context: .
-      dockerfile: training-service/Dockerfile
+      context: ../..
+      dockerfile: TGN/implementation/training-service/Dockerfile
     environment:
       IMPLEMENTATION_STORAGE_ROOT: /app/storage
       MONGODB_URI: mongodb://mongodb:27017/
@@ -116,8 +116,8 @@ services:
 
   inference-service:
     build:
-      context: .
-      dockerfile: inference-service/Dockerfile
+      context: ../..
+      dockerfile: TGN/implementation/inference-service/Dockerfile
     environment:
       IMPLEMENTATION_STORAGE_ROOT: /app/storage
       MONGODB_URI: mongodb://mongodb:27017/
@@ -137,8 +137,8 @@ services:
 
   evaluation-service:
     build:
-      context: .
-      dockerfile: evaluation-service/Dockerfile
+      context: ../..
+      dockerfile: TGN/implementation/evaluation-service/Dockerfile
     environment:
       IMPLEMENTATION_STORAGE_ROOT: /app/storage
       INFERENCE_SERVICE_URL: http://inference-service:8005

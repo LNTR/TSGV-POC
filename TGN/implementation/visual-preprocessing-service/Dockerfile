@@ -13,11 +13,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY visual-preprocessing-service/requirements.txt ./requirements.txt
+COPY TGN/implementation/visual-preprocessing-service/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY service_registry.py /app/service_registry.py
-COPY visual-preprocessing-service/app ./app
+COPY TGN/implementation/visual-preprocessing-service/app ./app
 
 EXPOSE 8001
 

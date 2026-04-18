@@ -6,16 +6,20 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /app/visual-feature-extraction-service
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    libglib2.0-0 \
-    libgl1 \
-    && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    sed -i 's|http://archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list; \
+    sed -i 's|http://security.ubuntu.com/ubuntu|https://security.ubuntu.com/ubuntu|g' /etc/apt/sources.list; \
+    apt-get update -o Acquire::Retries=5; \
+    apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-venv \
+        python3-dev \
+        libglib2.0-0 \
+        libgl1; \
+    rm -rf /var/lib/apt/lists/*
 
-COPY visual-feature-extraction-service/requirements.txt ./requirements.txt
+COPY TGN/implementation/visual-feature-extraction-service/requirements.txt ./requirements.txt
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN python3 -m pip install --no-cache-dir \
     fastapi==0.115.0 \
@@ -31,7 +35,7 @@ RUN python3 -m pip install --no-cache-dir \
     torchvision==0.19.1
 
 COPY service_registry.py /app/service_registry.py
-COPY visual-feature-extraction-service/app ./app
+COPY TGN/implementation/visual-feature-extraction-service/app ./app
 
 EXPOSE 8002
 

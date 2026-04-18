@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY training-service/requirements.txt ./requirements.txt
+COPY TALL/implementation/training-service/requirements.txt ./requirements.txt
 RUN grep -v '^torch==' requirements.txt > requirements.docker.txt
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN python3 -m pip install --no-cache-dir -r requirements.docker.txt
@@ -24,10 +24,10 @@ RUN python3 -m pip install --no-cache-dir \
     torch==2.4.1
 
 COPY service_registry.py /app/service_registry.py
-COPY tall_model.py /app/tall_model.py
-COPY tall_runtime.py /app/tall_runtime.py
-COPY tall_text.py /app/tall_text.py
-COPY training-service/app ./app
+COPY TALL/implementation/tall_model.py /app/tall_model.py
+COPY TALL/implementation/tall_runtime.py /app/tall_runtime.py
+COPY TALL/implementation/tall_text.py /app/tall_text.py
+COPY TALL/implementation/training-service/app ./app
 
 EXPOSE 8004
 

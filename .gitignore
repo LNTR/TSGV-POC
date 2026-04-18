@@ -214,3 +214,19 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local smoke test helpers and generated smoke data
+TGN-smoke/
+smoke-dataset/
+.tmp-docker-config/
+.tmp-tgn-build-context/
+
+# Local archive bundles
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.tar.bz2
+*.tbz2
+*.7z
+*.rar

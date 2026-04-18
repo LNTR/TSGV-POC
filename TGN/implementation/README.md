@@ -129,7 +129,41 @@ For local GPU-backed runs, start Compose with the override:
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build
 ```
 
-That override enables CUDA for visual feature extraction, training, and inference.
+That override enables CUDA for visual feature extraction, training, and inference. On a fresh machine, `--build` ensures Compose builds the actual local service images instead of depending on previously tagged images.
+
+Docker will reuse existing cached layers automatically for unchanged steps, so repeated rebuilds generally reuse storage rather than duplicating it.
+
+To launch only the GPU-enabled services and their dependencies:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build \
+  mongodb redis visual-preprocessing-service visual-feature-extraction-service \
+  text-processing-service training-service inference-service evaluation-service
+```
+
+To let the smoke script manage the GPU Compose stack for you:
+
+```bash
+python ../TGN-smoke/run_compose_smoke_test.py --compose-managed --cleanup
+```
+
+That managed path also builds the Compose images by default. If you already have the correct images locally and want to skip rebuilding, add `--compose-no-build`.
+
+To run the same smoke test against already-running Compose services:
+
+```bash
+python ../TGN-smoke/run_compose_smoke_test.py --cleanup
+```
+
+The smoke script:
+
+- waits for the Compose services on ports `8001` through `8006`
+- preprocesses and featurizes `3` dataset videos through the running containers
+- creates `1` aligned-text training/evaluation example per video
+- trains a tiny model, runs inference, and calls evaluation
+- optionally removes its generated artifacts when `--cleanup` is passed
+- can bring the GPU Compose stack up and down automatically with `--compose-managed`
+- stores its host-managed run files under `../TGN-smoke/<tag>/` when cleanup is not requested
 
 ## Where To Put Inputs
 

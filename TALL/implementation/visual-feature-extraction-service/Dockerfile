@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY visual-feature-extraction-service/requirements.txt ./requirements.txt
+COPY TALL/implementation/visual-feature-extraction-service/requirements.txt ./requirements.txt
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN python3 -m pip install --no-cache-dir \
     fastapi==0.115.0 \
@@ -31,7 +31,7 @@ RUN python3 -m pip install --no-cache-dir \
     torchvision==0.19.1
 
 COPY service_registry.py /app/service_registry.py
-COPY visual-feature-extraction-service/app ./app
+COPY TALL/implementation/visual-feature-extraction-service/app ./app
 
 EXPOSE 8002
 

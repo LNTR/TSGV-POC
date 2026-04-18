@@ -9,9 +9,10 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 import torch
 
-IMPLEMENTATION_ROOT = Path(__file__).resolve().parents[2]
-if str(IMPLEMENTATION_ROOT) not in sys.path:
-    sys.path.insert(0, str(IMPLEMENTATION_ROOT))
+THIS_FILE = Path(__file__).resolve()
+REPO_ROOT = next((parent for parent in THIS_FILE.parents if (parent / "service_registry.py").exists()), THIS_FILE.parents[2])
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from service_registry import build_service_lifespan
 

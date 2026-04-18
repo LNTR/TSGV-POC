@@ -10,7 +10,7 @@ import requests
 import torch
 from torchvision import transforms
 
-from .cnn_encoder import build_cnn_encoder
+from .cnn_encoder import VGG16
 
 
 def resolve_uri_to_path(uri: str) -> str:
@@ -204,13 +204,8 @@ def extract_visual_features(
     std: list[float],
     encoder: str = "vgg16",
 ) -> dict:
-    normalized_encoder = encoder.strip().lower()
-    feature_dims = {
-        "vgg16": 4096,
-        "resnet18": 512,
-    }
-    if normalized_encoder not in feature_dims:
-        raise ValueError(f"Unsupported encoder: {encoder}")
+    if encoder != "vgg16":
+        raise ValueError("Only vgg16 is supported in this stub.")
 
     output_features_uri = build_visual_feature_uri(frames_uri)
     feature_metadata_uri = build_feature_metadata_uri(frames_uri)
@@ -233,7 +228,7 @@ def extract_visual_features(
 
     feature_cache_key = build_feature_cache_key(
         preprocess_cache_key=preprocess_cache_key,
-        encoder=normalized_encoder,
+        encoder=encoder,
         mean=mean,
         std=std,
     )
@@ -267,7 +262,7 @@ def extract_visual_features(
                     "feature_metadata_uri": feature_metadata_uri,
                     "frames_metadata_uri": frames_metadata_uri,
                     "timesteps": int(cached.get("timesteps", 0)),
-                    "feature_dim": int(cached.get("feature_dim", feature_dims[normalized_encoder])),
+                    "feature_dim": int(cached.get("feature_dim", 4096)),
                     "video_hash": video_hash,
                     "feature_cache_key": feature_cache_key,
                     "cache_source": "redis",
@@ -282,12 +277,12 @@ def extract_visual_features(
         ]
     )
 
-    cnn_encoder = build_cnn_encoder(normalized_encoder, pretrained=True)
+    cnn_encoder = VGG16(pretrained=True)
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
     frames = np.load(frames_path)
     if frames.shape[0] == 0:
-        empty = torch.zeros((0, feature_dims[normalized_encoder]), dtype=torch.float32)
+        empty = torch.zeros((0, 4096), dtype=torch.float32)
         torch.save(empty, output_features_path)
         metadata = {
             "base_name": derive_base_name_from_uri(frames_uri),
@@ -295,11 +290,10 @@ def extract_visual_features(
             "feature_metadata_uri": feature_metadata_uri,
             "frames_metadata_uri": frames_metadata_uri,
             "timesteps": 0,
-            "feature_dim": feature_dims[normalized_encoder],
+            "feature_dim": 4096,
             "video_hash": video_hash,
             "feature_cache_key": feature_cache_key,
             "cache_source": "computed",
-            "encoder": normalized_encoder,
         }
         write_json(feature_metadata_path, metadata)
         set_cached_payload(feature_cache_key, metadata)
@@ -325,7 +319,6 @@ def extract_visual_features(
         "video_hash": video_hash,
         "feature_cache_key": feature_cache_key,
         "cache_source": "computed",
-        "encoder": normalized_encoder,
         "device_used": actual_device,
         "batch_size_used": int(batch_size_used),
     }

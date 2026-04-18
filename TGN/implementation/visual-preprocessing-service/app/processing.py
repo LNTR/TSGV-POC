@@ -279,8 +279,11 @@ def forward_to_feature_service(
     frames_uri = build_visual_preprocess_uri(input_video_uri)
     features_uri = build_visual_feature_uri(input_video_uri)
     timeout_sec = int(os.environ.get("FEATURE_SERVICE_TIMEOUT_SEC", "1800"))
+    resolved_feature_service_url = feature_service_url.rstrip("/")
+    if not resolved_feature_service_url.endswith("/jobs/features"):
+        resolved_feature_service_url = f"{resolved_feature_service_url}/jobs/features"
     response = requests.post(
-        f"{feature_service_url.rstrip('/')}/jobs/features",
+        resolved_feature_service_url,
         json={
             "frames_uri": frames_uri,
             "output_features_uri": features_uri,

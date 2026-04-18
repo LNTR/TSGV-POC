@@ -1,0 +1,6 @@
+git show --shortstat --format='%H %s' 078edaf -- service_registry.py TGN/implementation kubernetes
+git show --name-only --format='' 078edaf -- service_registry.py TGN/implementation kubernetes | sed '/^$/d'
+git show --shortstat --format='%H %s' dd47526 -- dataset TGN/implementation kubernetes
+git show --name-only --format='' dd47526 -- dataset TGN/implementation kubernetes | sed '/^$/d'
+git show --shortstat --format='%H %s' e77dd81 -- TGN-smoke TGN/implementation/README.md .gitignore
+git show --name-only --format='' e77dd81 -- TGN-smoke TGN/implementation/README.md .gitignore | sed '/^$/d'

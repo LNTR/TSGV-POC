@@ -1,0 +1,14 @@
+[
+  {
+    "base_name": "exp05-resnet18-component-s27-d34-e1",
+    "text_processed_uri": "shared://text/processed/exp05-resnet18-component-s27-d34-e1.tp.json",
+    "video_features_uri": "shared://features/visual/exp05-resnet18-component-s27-d34.vf.pt",
+    "row_index": 0,
+    "query_text": "take out ginger from counter,cupboard using hand",
+    "start_frame": 233,
+    "end_frame": 435,
+    "start_time": 7.766666666666667,
+    "end_time": 14.5,
+    "num_token_ids": 9
+  }
+]

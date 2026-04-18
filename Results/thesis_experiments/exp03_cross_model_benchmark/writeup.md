@@ -1,0 +1,3 @@
+No benchmark scores or phase timings were produced for this experiment. The `Results/compose_dataset_60_20_20/` artifact referenced in the prompt was not present in this checkout, and the full Compose-managed TGN workflow path was blocked locally by Docker host issues before image build completion.
+
+A limited TGN smoke pass was still completed. `summary.json` records `2` successful smoke checks: `TGN` text-processing returned `GET /registry/self`, accepted `1` aligned-text request against `dataset/texts/s27-d34.aligned.tsv`, and wrote `shared://text/processed/smoke-s27-d34-e1.tp.json`. `TALL` was not included in the follow-up scope and its benchmark fields remain `"not_run"`.

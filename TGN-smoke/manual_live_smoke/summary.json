@@ -1,0 +1,103 @@
+{
+  "tag": "manual-live-smoke",
+  "selected_video_ids": {
+    "train": "s13-d21",
+    "val": "s22-d25",
+    "test": "s27-d34"
+  },
+  "phases": {
+    "text_processing_train": {
+      "duration_sec": 0.118
+    },
+    "text_processing_val": {
+      "duration_sec": 0.018
+    },
+    "text_processing_test": {
+      "duration_sec": 0.009
+    },
+    "training": {
+      "duration_sec": 3.402
+    },
+    "inference": {
+      "duration_sec": 0.308
+    },
+    "evaluation": {
+      "duration_sec": 0.202
+    }
+  },
+  "split_paths": {
+    "train": "/home/lakmitha/workspace/uni work/TSGV-POC/TGN/implementation/storage/splits/train/manual-live-smoke.json",
+    "val": "/home/lakmitha/workspace/uni work/TSGV-POC/TGN/implementation/storage/splits/val/manual-live-smoke.json",
+    "test": "/home/lakmitha/workspace/uni work/TSGV-POC/TGN/implementation/storage/splits/test/manual-live-smoke.json"
+  },
+  "records": {
+    "train": {
+      "base_name": "manual-live-smoke-s13-d21-e1",
+      "text_processed_uri": "shared://text/processed/manual-live-smoke-s13-d21-e1.tp.json",
+      "video_features_uri": "shared://features/visual/s13-d21.vf.pt",
+      "row_index": 0,
+      "query_text": "take out cutting board from counter,drawer using hand",
+      "start_frame": 252,
+      "end_frame": 452,
+      "start_time": 8.4,
+      "end_time": 15.066666666666666,
+      "num_token_ids": 10
+    },
+    "val": {
+      "base_name": "manual-live-smoke-s22-d25-e1",
+      "text_processed_uri": "shared://text/processed/manual-live-smoke-s22-d25-e1.tp.json",
+      "video_features_uri": "shared://features/visual/s22-d25.vf.pt",
+      "row_index": 0,
+      "query_text": "take out plastic paper bag from counter,cupboard using hand",
+      "start_frame": 290,
+      "end_frame": 455,
+      "start_time": 9.666666666666666,
+      "end_time": 15.166666666666666,
+      "num_token_ids": 11
+    },
+    "test": {
+      "base_name": "manual-live-smoke-s27-d34-e1",
+      "text_processed_uri": "shared://text/processed/manual-live-smoke-s27-d34-e1.tp.json",
+      "video_features_uri": "shared://features/visual/s27-d34.vf.pt",
+      "row_index": 0,
+      "query_text": "take out ginger from counter,cupboard using hand",
+      "start_frame": 233,
+      "end_frame": 435,
+      "start_time": 7.766666666666667,
+      "end_time": 14.5,
+      "num_token_ids": 9
+    }
+  },
+  "training_response": {
+    "status": "accepted",
+    "metadata": {
+      "model_uri": "shared://models/manual-live-smoke.bin",
+      "optimizer_uri": "shared://models/manual-live-smoke.bin.optim",
+      "metrics_uri": "shared://models/manual-live-smoke.bin.metrics.json",
+      "train_samples": 1,
+      "val_samples": 1,
+      "artifact_uri": "shared://artifacts/text/v1",
+      "device": "cpu",
+      "iterations_completed": 1,
+      "best_val_score": 0.0,
+      "visual_feature_size": 4096,
+      "word_embed_size": 50,
+      "features_root_uri": "shared://features/visual"
+    }
+  },
+  "inference_response": {
+    "segments": [
+      {
+        "start_sec": 0.0,
+        "end_sec": 0.0,
+        "score": 0.8200312256813049
+      }
+    ]
+  },
+  "evaluation_response": {
+    "job_id": "manual-live-smoke",
+    "scores": {
+      "R@1_IOU0.5": 0.0
+    }
+  }
+}

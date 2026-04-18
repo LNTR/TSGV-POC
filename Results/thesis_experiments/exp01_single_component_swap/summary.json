@@ -1,0 +1,9 @@
+{
+  "status": "deferred",
+  "reason": "The single-component swap was not executed. The requested follow-up scope was limited to TGN-only work, while this experiment requires a multi-model router setup; kubectl was also not installed on this host, so the ModelRouter custom resource could not be applied or observed.",
+  "swap_latency_sec": "not_run",
+  "aliases_reconciled": "not_run",
+  "request_succeeded": "not_run",
+  "route_before": "not_run",
+  "route_after": "not_run"
+}

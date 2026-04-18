@@ -229,3 +229,8 @@ smoke-dataset/
 *.tbz2
 *.7z
 *.rar
+
+# Keep thesis experiment bundles trackable, including log files.
+!Results/
+!Results/thesis_experiments/
+!Results/thesis_experiments/**

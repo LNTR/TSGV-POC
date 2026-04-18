@@ -1,0 +1,27 @@
+git diff --stat -- TGN/implementation/visual-feature-extraction-service/app/cnn_encoder.py TGN/implementation/visual-feature-extraction-service/app/extraction.py
+git diff --numstat -- TGN/implementation/visual-feature-extraction-service/app/cnn_encoder.py TGN/implementation/visual-feature-extraction-service/app/extraction.py
+docker compose -f TGN/implementation/docker-compose.yml exec -T visual-feature-extraction-service python3 - <<'PY'
+from app.cnn_encoder import build_cnn_encoder
+build_cnn_encoder('resnet18', pretrained=True)
+print('resnet18_ready')
+PY
+python3 scripts/run_exp05_resnet18_component_smoke.py --output TGN-smoke/exp05_resnet18_component_smoke/summary.json
+python3 - <<'PY'
+import json, requests, time
+payload = {
+    'job': {
+        'job_id': 'exp05-post-guard',
+        'trace_id': 'exp05-post-guard-trace',
+        'dataset': 'smoke',
+        'created_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'version': 'v1',
+    },
+    'model_uri': 'shared://models/manual-live-smoke.bin',
+    'test_split_uri': 'shared://splits/test/manual-live-smoke.json',
+    'features_root_uri': 'shared://features/visual',
+    'metrics': ['R@1_IOU0.5'],
+}
+resp = requests.post('http://127.0.0.1:8006/jobs/evaluate', json=payload, timeout=300)
+print(resp.status_code)
+print(json.dumps(resp.json(), indent=2))
+PY

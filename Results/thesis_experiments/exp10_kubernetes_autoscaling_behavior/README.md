@@ -1,0 +1,1 @@
+Run context: 2026-04-18 on host `ucsc-ThinkPad-T470p` (`Linux 6.17.0-20-generic`) with GPU `NVIDIA GeForce 940MX`. This experiment targeted local Kubernetes measurement, but the required `kubectl` tooling was not available on this machine.

@@ -8,8 +8,10 @@ __pycache__/
 dataset/
 smoke-dataset/
 TGN-smoke/
+Results/
 
 TGN/implementation/storage/
+TGN/implementation/smoke/
 TALL/implementation/storage/
 
 TGN/implementation/.venv/

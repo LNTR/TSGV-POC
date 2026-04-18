@@ -1,0 +1,2 @@
+failed to fetch metadata: fork/exec /home/lakmitha/.docker/cli-plugins/docker-buildx: no such file or directory
+error listing credentials - err: exec: "docker-credential-desktop": executable file not found in $PATH, out: ``

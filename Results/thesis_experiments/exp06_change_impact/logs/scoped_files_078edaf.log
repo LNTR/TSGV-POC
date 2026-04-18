@@ -1,0 +1,16 @@
+TGN/implementation/README.md
+TGN/implementation/docker-compose.yml
+TGN/implementation/evaluation-service/Dockerfile
+TGN/implementation/evaluation-service/app/main.py
+TGN/implementation/inference-service/Dockerfile
+TGN/implementation/inference-service/app/main.py
+TGN/implementation/service_registry.py
+TGN/implementation/text-processing-service/Dockerfile
+TGN/implementation/text-processing-service/app/main.py
+TGN/implementation/training-service/Dockerfile
+TGN/implementation/training-service/app/main.py
+TGN/implementation/visual-feature-extraction-service/Dockerfile
+TGN/implementation/visual-feature-extraction-service/app/main.py
+TGN/implementation/visual-preprocessing-service/Dockerfile
+TGN/implementation/visual-preprocessing-service/app/main.py
+service_registry.py

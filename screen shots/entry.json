@@ -1,0 +1,81 @@
+{
+  "_id": {
+    "$oid": "69e1ce51f5111c65798e6232"
+  },
+  "service_id": "tgn:inference-service:tgn-inference-service",
+  "compatible_models": [
+    "tgn"
+  ],
+  "created_at": "2026-04-17T06:08:17.172721+00:00",
+  "endpoint": {
+    "url": "http://inference-service:8005",
+    "port": 8005,
+    "scheme": "http"
+  },
+  "implementation_name": "tgn-inference-service",
+  "logical_service": "inference-service",
+  "metadata": {
+    "api_title": "Inference Service",
+    "service_version": "0.1.0"
+  },
+  "model_name": "tgn",
+  "registered_at": "2026-04-18T06:16:29.688111+00:00",
+  "runtime": {
+    "platform": "docker-compose",
+    "namespace": "implementation"
+  },
+  "shared_across_models": false,
+  "status": "ready",
+  "updated_at": "2026-04-18T06:16:29.688111+00:00",
+  "compatibility": {
+    "seeded_catalog_models": [
+      "tgn",
+      "tall"
+    ],
+    "declared_compatible_models": [
+      "tgn"
+    ],
+    "shared_across_models": false,
+    "compatible_services": [
+      {
+        "model_name": "tgn",
+        "logical_service": "inference-service",
+        "implementation_name": "tgn-inference-service",
+        "service_id": "tgn:inference-service:tgn-inference-service"
+      }
+    ],
+    "component_compatibility": {
+      "depends_on": [
+        {
+          "model_name": "tgn",
+          "logical_service": "training-service",
+          "implementation_name": "tgn-training-service",
+          "service_id": "tgn:training-service:tgn-training-service"
+        },
+        {
+          "model_name": "tgn",
+          "logical_service": "visual-feature-extraction-service",
+          "implementation_name": "tgn-visual-feature-extraction-service",
+          "service_id": "tgn:visual-feature-extraction-service:tgn-visual-feature-extraction-service"
+        },
+        {
+          "model_name": "tgn",
+          "logical_service": "text-processing-service",
+          "implementation_name": "tgn-text-processing-service",
+          "service_id": "tgn:text-processing-service:tgn-text-processing-service"
+        }
+      ],
+      "produces_for": [
+        {
+          "model_name": "tgn",
+          "logical_service": "evaluation-service",
+          "implementation_name": "tgn-evaluation-service",
+          "service_id": "tgn:evaluation-service:tgn-evaluation-service"
+        }
+      ]
+    },
+    "missing_seeded_models": [],
+    "supports_requested_model": true,
+    "lookup_mode": "seeded_component_catalog"
+  }
+}

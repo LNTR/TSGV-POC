@@ -1,0 +1,9 @@
+encoder: resnet18
+feature_extraction_train_duration_sec: 0.008
+text_processing_train_duration_sec: 0.006
+training_duration_sec: 0.087
+inference_duration_sec: 0.023
+evaluation_duration_sec: 0.035
+feature_dim: 512
+training_visual_feature_size: 512
+evaluation_scores: {"R@1_IOU0.5": 0.0}

@@ -1,0 +1,7 @@
+{
+  "status": "complete",
+  "composite_swap_latency_sec": 0.271,
+  "services_reconciled": 6,
+  "before_active_model": "tgn",
+  "after_active_model": "tall"
+}

@@ -1,0 +1,17 @@
+python3 - <<'PY'
+from pathlib import Path
+import yaml
+for path in sorted(Path('contracts').glob('*.yaml')):
+    data = yaml.safe_load(path.read_text())
+    print(path.name, len((data or {}).get('paths', {})), sorted(((data or {}).get('paths', {})).keys()))
+PY
+rg -n "@app\\.(get|post|put|delete|patch)\\(" TGN/implementation | sed -n '1,220p'
+sed -n '1,260p' TGN/implementation/visual-preprocessing-service/app/main.py
+sed -n '1,260p' TGN/implementation/visual-preprocessing-service/app/processing.py
+sed -n '1,260p' TGN/implementation/visual-feature-extraction-service/app/main.py
+sed -n '1,360p' TGN/implementation/visual-feature-extraction-service/app/extraction.py
+sed -n '1,560p' TGN/implementation/text-processing-service/app/main.py
+sed -n '1,220p' TGN/implementation/training-service/app/main.py
+sed -n '1,360p' TGN/implementation/training-service/app/trainer.py
+sed -n '1,320p' TGN/implementation/inference-service/app/pipeline.py
+sed -n '1,360p' TGN/implementation/evaluation-service/app/evaluator.py

@@ -1,0 +1,226 @@
+{
+  "status": "complete",
+  "artifacts": [
+    {
+      "artifact_path": "contracts/visual-preprocessing.openapi.yaml",
+      "kind": "openapi_contract",
+      "consumers_list": [
+        "TGN/implementation/visual-preprocessing-service"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "artifact_path": "contracts/visual-feature-extraction.openapi.yaml",
+      "kind": "openapi_contract",
+      "consumers_list": [
+        "TGN/implementation/visual-feature-extraction-service"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "artifact_path": "contracts/text-processing.openapi.yaml",
+      "kind": "openapi_contract",
+      "consumers_list": [
+        "TGN/implementation/text-processing-service"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "artifact_path": "contracts/training.openapi.yaml",
+      "kind": "openapi_contract",
+      "consumers_list": [
+        "TGN/implementation/training-service"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "artifact_path": "contracts/inference.openapi.yaml",
+      "kind": "openapi_contract",
+      "consumers_list": [
+        "TGN/implementation/inference-service"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "artifact_path": "contracts/evaluation.openapi.yaml",
+      "kind": "openapi_contract",
+      "consumers_list": [
+        "TGN/implementation/evaluation-service"
+      ],
+      "consumer_count": 1
+    },
+    {
+      "artifact_path": "service_registry.py",
+      "kind": "shared_python_helper",
+      "consumers_list": [
+        "TGN/implementation/visual-preprocessing-service/app/main.py",
+        "TGN/implementation/visual-feature-extraction-service/app/main.py",
+        "TGN/implementation/text-processing-service/app/main.py",
+        "TGN/implementation/training-service/app/main.py",
+        "TGN/implementation/inference-service/app/main.py",
+        "TGN/implementation/evaluation-service/app/main.py"
+      ],
+      "consumer_count": 6
+    },
+    {
+      "artifact_path": "kubernetes/operator",
+      "kind": "shared_kubernetes_controller",
+      "consumers_list": [
+        "kubernetes/manifests/operator-deployment.yaml",
+        "kubernetes/examples/model-router-tgn.yaml",
+        "kubernetes/examples/model-router-production.yaml",
+        "kubernetes/examples/model-router-foobar.yaml"
+      ],
+      "consumer_count": 4
+    },
+    {
+      "artifact_path": "kubernetes/manifests/modelrouter-crd.yaml",
+      "kind": "kubernetes_crd",
+      "consumers_list": [
+        "kubernetes/operator/cmd/main.go",
+        "kubernetes/examples/model-router-tgn.yaml",
+        "kubernetes/examples/model-router-production.yaml",
+        "kubernetes/examples/model-router-foobar.yaml"
+      ],
+      "consumer_count": 4
+    }
+  ],
+  "runtime_reuse_checks": {
+    "preprocess": {
+      "video_id": "s27-d34",
+      "first_duration_sec": 25.701,
+      "second_duration_sec": 0.105,
+      "first_cache_hit": false,
+      "second_cache_hit": true,
+      "first_forwarded_cache_hit": false,
+      "second_forwarded_cache_hit": true,
+      "first_response": {
+        "status": "accepted",
+        "metadata": {
+          "base_name": "s27-d34",
+          "input_video_uri": "file:///app/dataset/videos/s27-d34.avi",
+          "frames_uri": "shared://frames/processed/s27-d34.vp.npy",
+          "metadata_uri": "shared://frames/metadata/s27-d34.vp.meta.json",
+          "num_frames": 20,
+          "output_frame_size": 256,
+          "sample_every_sec": 3,
+          "video_hash": "42959fbdb742a51c4b30300c005ca99274c52adbc11b845ad27a379f47fc959a",
+          "preprocess_cache_key": "visual:preprocess:v1:bab230a62e3d9688d2d484249da96cf7fe6b26f0027ca4a764dc04773d24a203",
+          "cache_source": "computed",
+          "cache_hit": false,
+          "features_uri": "shared://features/visual/s27-d34.vf.pt"
+        },
+        "forwarded": {
+          "status": "accepted",
+          "metadata": {
+            "base_name": "s27-d34",
+            "features_uri": "shared://features/visual/s27-d34.vf.pt",
+            "feature_metadata_uri": "shared://features/metadata/s27-d34.vf.meta.json",
+            "frames_metadata_uri": "shared://frames/metadata/s27-d34.vp.meta.json",
+            "timesteps": 20,
+            "feature_dim": 4096,
+            "video_hash": "42959fbdb742a51c4b30300c005ca99274c52adbc11b845ad27a379f47fc959a",
+            "feature_cache_key": "visual:features:v1:e20fe4d9c3c1994ead42d4f16006e32e9755b799e9ae3fbb7f2c895d66825b02",
+            "cache_source": "computed",
+            "encoder": "vgg16",
+            "device_used": "cuda:0",
+            "batch_size_used": 4,
+            "cache_hit": false
+          },
+          "downstream": {
+            "triggered": false,
+            "reason": "downstream_not_configured"
+          }
+        }
+      },
+      "second_response": {
+        "status": "accepted",
+        "metadata": {
+          "base_name": "s27-d34",
+          "frames_uri": "shared://frames/processed/s27-d34.vp.npy",
+          "metadata_uri": "shared://frames/metadata/s27-d34.vp.meta.json",
+          "num_frames": 20,
+          "video_hash": "42959fbdb742a51c4b30300c005ca99274c52adbc11b845ad27a379f47fc959a",
+          "cache_hit": true,
+          "cache_source": "local_metadata",
+          "preprocess_cache_key": "visual:preprocess:v1:bab230a62e3d9688d2d484249da96cf7fe6b26f0027ca4a764dc04773d24a203",
+          "features_uri": "shared://features/visual/s27-d34.vf.pt"
+        },
+        "forwarded": {
+          "status": "accepted",
+          "metadata": {
+            "base_name": "s27-d34",
+            "features_uri": "shared://features/visual/s27-d34.vf.pt",
+            "feature_metadata_uri": "shared://features/metadata/s27-d34.vf.meta.json",
+            "frames_metadata_uri": "shared://frames/metadata/s27-d34.vp.meta.json",
+            "timesteps": 20,
+            "feature_dim": 4096,
+            "video_hash": "42959fbdb742a51c4b30300c005ca99274c52adbc11b845ad27a379f47fc959a",
+            "feature_cache_key": "visual:features:v1:e20fe4d9c3c1994ead42d4f16006e32e9755b799e9ae3fbb7f2c895d66825b02",
+            "cache_hit": true,
+            "cache_source": "local_metadata"
+          },
+          "downstream": {
+            "triggered": false,
+            "reason": "downstream_not_configured"
+          }
+        }
+      },
+      "second_faster_bool": true
+    },
+    "text_processing": {
+      "input_text_uri": "shared://text/raw/test_inference/reuse-check.txt",
+      "first_duration_sec": 0.104,
+      "second_duration_sec": 0.007,
+      "first_cache_hit": false,
+      "second_cache_hit": true,
+      "first_response": {
+        "status": "accepted",
+        "metadata": {
+          "base_name": "reuse-check",
+          "text_processed_uri": "shared://text/processed/reuse-check.tp.json",
+          "video_features_uri": "shared://features/visual/s27-d34.vf.pt",
+          "length_t": 8,
+          "num_token_ids": 8,
+          "start_time": null,
+          "end_time": null,
+          "cache_hit": false,
+          "cache_key": "pred:text:v1:89ed73cae13b5a43939a311b12404158f0600b0fca29a080a468fab22b09523f",
+          "cache_enabled": true,
+          "semantic_enabled": true,
+          "semantic_vector_ready": true,
+          "semantic_known_token_count": 5,
+          "normalized_text": "take out ginger from counter cupboard using hand"
+        },
+        "downstream": {
+          "triggered": false,
+          "reason": "downstream_not_configured"
+        }
+      },
+      "second_response": {
+        "status": "accepted",
+        "metadata": {
+          "base_name": "reuse-check",
+          "text_processed_uri": "shared://text/processed/reuse-check.tp.json",
+          "video_features_uri": "shared://features/visual/s27-d34.vf.pt",
+          "length_t": 8,
+          "num_token_ids": 8,
+          "start_time": null,
+          "end_time": null,
+          "cache_hit": true,
+          "cache_key": "pred:text:v1:89ed73cae13b5a43939a311b12404158f0600b0fca29a080a468fab22b09523f",
+          "cache_enabled": true,
+          "semantic_enabled": true,
+          "semantic_vector_ready": true,
+          "semantic_known_token_count": 0,
+          "normalized_text": "take out ginger from counter cupboard using hand"
+        },
+        "downstream": {
+          "triggered": false,
+          "reason": "downstream_not_configured"
+        }
+      },
+      "second_faster_bool": true
+    }
+  }
+}

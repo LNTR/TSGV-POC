@@ -1,0 +1,9 @@
+kubernetes/manifests/modelrouter-crd.yaml:11:    kind: ModelRouter
+kubernetes/examples/model-router-production.yaml:1:apiVersion: registry.tsgv.io/v1alpha1
+kubernetes/examples/model-router-production.yaml:2:kind: ModelRouter
+kubernetes/examples/model-router-tgn.yaml:1:apiVersion: registry.tsgv.io/v1alpha1
+kubernetes/examples/model-router-tgn.yaml:2:kind: ModelRouter
+kubernetes/examples/model-router-foobar.yaml:1:apiVersion: registry.tsgv.io/v1alpha1
+kubernetes/examples/model-router-foobar.yaml:2:kind: ModelRouter
+kubernetes/operator/cmd/main.go:40:	kindName                  = "ModelRouter"
+kubernetes/operator/cmd/main.go:41:	routePlural               = "modelrouters"

@@ -1,0 +1,44 @@
+{
+  "services": {
+    "inference-service": [
+      {
+        "elapsed_sec": 0.0,
+        "ready_replicas": 1
+      },
+      {
+        "elapsed_sec": 34.2,
+        "ready_replicas": 2
+      },
+      {
+        "elapsed_sec": 67.4,
+        "ready_replicas": 3
+      },
+      {
+        "elapsed_sec": 109.8,
+        "ready_replicas": 4
+      },
+      {
+        "elapsed_sec": 456.4,
+        "ready_replicas": 1
+      }
+    ],
+    "text-processing-service": [
+      {
+        "elapsed_sec": 0.0,
+        "ready_replicas": 1
+      },
+      {
+        "elapsed_sec": 28.6,
+        "ready_replicas": 2
+      },
+      {
+        "elapsed_sec": 91.7,
+        "ready_replicas": 3
+      },
+      {
+        "elapsed_sec": 413.8,
+        "ready_replicas": 1
+      }
+    ]
+  }
+}

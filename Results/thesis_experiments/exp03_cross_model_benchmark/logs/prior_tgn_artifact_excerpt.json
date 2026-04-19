@@ -1,0 +1,20 @@
+{
+  "source_summary": "Results/compose_dataset_60_20_20/summary.json",
+  "source_metrics": "Results/compose_dataset_60_20_20/model.bin.metrics.json",
+  "evaluation_scores": {
+    "R@1_IOU0.5": 0.0,
+    "R@3_IOU0.5": 0.0
+  },
+  "phase_timings_sec": {
+    "preprocess": 8218.184,
+    "text_processing": 260.132,
+    "training": 286.123,
+    "inference": 0.59,
+    "evaluation": 316.266
+  },
+  "metric_list": [
+    "R@1_IOU0.5",
+    "R@3_IOU0.5"
+  ],
+  "split_fingerprint": "sha256:69b39fef1e037686f45ffd2a41f1ed619fb8c0ac3608244ad2dc8350872956b0"
+}

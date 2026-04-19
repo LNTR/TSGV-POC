@@ -1,0 +1,19 @@
+{
+  "service": "inference-service",
+  "baseline_single_replica": {
+    "concurrency_40": {
+      "throughput_rps": 24.82,
+      "p50_latency_ms": 73.5,
+      "p95_latency_ms": 182.8,
+      "replica_count_max": 1
+    }
+  },
+  "hpa_enabled": {
+    "concurrency_40": {
+      "throughput_rps": 35.59,
+      "p50_latency_ms": 47.2,
+      "p95_latency_ms": 115.9,
+      "replica_count_max": 3
+    }
+  }
+}

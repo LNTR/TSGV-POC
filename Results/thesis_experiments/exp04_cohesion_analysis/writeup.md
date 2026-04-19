@@ -1,0 +1,3 @@
+The static endpoint inventory showed that `text-processing-service` exposed `4` public HTTP endpoints, `training-service` exposed `3`, and the remaining four services each exposed `2`. These counts were taken from the shared OpenAPI contracts under `contracts/`.
+
+The responsibility inventory remained narrow for the boundary-oriented services. The preprocessing and feature-extraction services were centered on artifact creation and forwarding, the inference and evaluation services were centered on prediction and scoring, and the training service was centered on data loading and optimization. No LCOM-style score was reported because no analyzer was run in this pass.

@@ -1,0 +1,1 @@
+python3 scripts/analyze_tgn_coupling.py --output Results/thesis_experiments/exp09_coupling_dependency_assessment/summary.json

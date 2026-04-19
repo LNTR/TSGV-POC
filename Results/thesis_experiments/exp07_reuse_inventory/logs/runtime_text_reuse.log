@@ -1,0 +1,4 @@
+first_duration_sec: 0.104
+second_duration_sec: 0.007
+first_cache_hit: False
+second_cache_hit: True

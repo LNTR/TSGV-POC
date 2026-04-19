@@ -1,5 +1,5 @@
 python TGN-smoke/run_compose_smoke_test.py --compose-managed --cleanup
 python TGN-smoke/run_compose_dataset_workflow.py --compose-managed --stats-interval-sec 1.0
 python3 TGN-smoke/run_compose_dataset_workflow.py --compose-managed --tag compose_dataset_60_20_20 --max-iter 300 --valid-niter 25 --exp03-bundle-dir Results/thesis_experiments/exp03_cross_model_benchmark
-python3 TGN-smoke/run_compose_dataset_workflow.py --compose-managed --compose-no-build --keep-compose-up --tag compose_dataset_60_20_20 --request-concurrency 8 --stats-interval-sec 5 --no-force-feature-recompute --exp03-bundle-dir Results/thesis_experiments/exp03_cross_model_benchmark
+python TGN-smoke/run_compose_dataset_workflow.py --compose-managed --compose-no-build --keep-compose-up --tag compose_dataset_60_20_20 --request-concurrency 8 --stats-interval-sec 5 --no-force-feature-recompute --exp03-bundle-dir Results/thesis_experiments/exp03_cross_model_benchmark
 

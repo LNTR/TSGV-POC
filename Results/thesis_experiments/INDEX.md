@@ -1,7 +1,7 @@
 | experiment | status | one_line_outcome | headline_number |
 | --- | --- | --- | --- |
-| exp01_single_component_swap | deferred | The single-component swap was not executed. | not_applicable |
-| exp02_composite_module_swap | deferred | The composite ModelRouter swap was not executed. | not_applicable |
+| exp01_single_component_swap | complete | One logical alias was retargeted and the swapped route responded successfully. | swap_latency_sec: 1.02 |
+| exp02_composite_module_swap | complete | All six logical alias services were retargeted during the activeModel swap. | composite_swap_latency_sec: 0.271 |
 | exp03_cross_model_benchmark | partial | Full TGN workflow benchmarking was deferred, but 2 local TGN smoke checks passed. | smoke_checks_passed: 2 |
 | exp04_cohesion_analysis | complete | Endpoint counts and service responsibility inventory were generated. | max_endpoints: 4 |
 | exp05_replacement_effort | complete | The visual encoder seam was extended with a replacement-ready resnet18 implementation and smoke-validated. | time_minutes: 18.1 |

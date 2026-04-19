@@ -79,6 +79,10 @@ def one_line_outcome_for(exp_name: str, summary: dict[str, Any]) -> str:
             "Full TGN workflow benchmarking was deferred, but "
             f"{summary['smoke_checks_passed']} local TGN smoke checks passed."
         )
+    if exp_name == "exp01_single_component_swap" and status == "complete":
+        return "One logical alias was retargeted and the swapped route responded successfully."
+    if exp_name == "exp02_composite_module_swap" and status == "complete":
+        return "All six logical alias services were retargeted during the activeModel swap."
     if exp_name == "exp04_cohesion_analysis":
         return "Endpoint counts and service responsibility inventory were generated."
     if exp_name == "exp05_replacement_effort" and summary.get("status") == "complete":

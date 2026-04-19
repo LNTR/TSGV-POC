@@ -446,10 +446,27 @@ func (r *routerReconciler) ensureRouterConfigMap(
 
 func (r *routerReconciler) updateStatus(ctx context.Context, router *unstructured.Unstructured, status map[string]any) error {
 	updated := router.DeepCopy()
-	if err := unstructured.SetNestedMap(updated.Object, status, "status"); err != nil {
+	jsonCompatibleStatus, err := normalizeJSONMap(status)
+	if err != nil {
+		return err
+	}
+	if err := unstructured.SetNestedMap(updated.Object, jsonCompatibleStatus, "status"); err != nil {
 		return err
 	}
 	return r.Status().Update(ctx, updated)
+}
+
+func normalizeJSONMap(payload map[string]any) (map[string]any, error) {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("marshal status payload: %w", err)
+	}
+
+	normalized := make(map[string]any)
+	if err := json.Unmarshal(raw, &normalized); err != nil {
+		return nil, fmt.Errorf("unmarshal status payload: %w", err)
+	}
+	return normalized, nil
 }
 
 func writeRoutesToMongoDB(

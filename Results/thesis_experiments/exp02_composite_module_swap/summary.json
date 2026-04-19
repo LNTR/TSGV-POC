@@ -1,8 +1,7 @@
 {
-  "status": "deferred",
-  "reason": "The composite ModelRouter swap was not executed. The requested follow-up scope was limited to TGN-only work, while this experiment requires a multi-model router setup; kubectl was also not installed on this host, so the activeModel change could not be applied or measured.",
-  "composite_swap_latency_sec": "not_run",
-  "services_reconciled": "not_run",
-  "before_active_model": "not_run",
-  "after_active_model": "not_run"
+  "status": "complete",
+  "composite_swap_latency_sec": 0.271,
+  "services_reconciled": 6,
+  "before_active_model": "tgn",
+  "after_active_model": "tall"
 }

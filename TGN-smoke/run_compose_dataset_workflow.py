@@ -49,7 +49,7 @@ PHASE_SERVICES = {
 }
 
 
-def json_request(method: str, url: str, payload: dict[str, Any] | None = None, timeout: int = 300) -> dict[str, Any]:
+def json_request(method: str, url: str, payload: dict[str, Any] | None = None, timeout: int = 600) -> dict[str, Any]:
     data = None
     headers = {}
     if payload is not None:
@@ -74,7 +74,7 @@ def wait_for_services(base_url: str, timeout_sec: int) -> None:
     while pending:
         for service, port in list(pending.items()):
             try:
-                json_request("GET", f"{base_url}:{port}/registry/self", timeout=5)
+                json_request("GET", f"{base_url}:{port}/registry/self", timeout=10)
             except Exception:
                 continue
             pending.pop(service, None)
@@ -178,7 +178,7 @@ def collect_gpu_snapshot() -> dict[str, Any]:
         "--format=csv,noheader,nounits",
     ]
     try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        result = subprocess.run(command, capture_output=True, text=True, timeout=20)
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return {
             "available": False,
@@ -383,7 +383,7 @@ def run_timed_phase(
     finally:
         duration_sec = time.perf_counter() - start
         stop_event.set()
-        worker.join(timeout=stats_interval_sec + 1.0)
+        worker.join(timeout=stats_interval_sec + 2.0)
         record_phase_stats(phase_stats, phase_name, duration_sec, samples, stats_lock)
 
 
@@ -475,7 +475,7 @@ def process_visual_video(
                 "sample_every_sec": args.sample_every_sec,
                 "feature_service_url": args.feature_service_url,
             },
-            timeout=1800,
+            timeout=7200,
         ),
     )
 
@@ -529,7 +529,7 @@ def process_split_text_video(
                     "base_name_prefix": f"{args.tag}-{video_id}",
                     "fps": args.fps,
                 },
-                timeout=600,
+                timeout=1200,
             ),
         )
 
@@ -592,7 +592,7 @@ def process_split_text_video(
                     "base_name": base_name,
                     "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
                 },
-                timeout=600,
+                timeout=1200,
             ),
         )
         metadata = processed.get("metadata", {})
@@ -669,7 +669,7 @@ def compute_split_fingerprint(train_split_text: str, val_split_text: str, test_s
 def detect_gpu_models() -> list[str]:
     command = ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"]
     try:
-        result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        result = subprocess.run(command, capture_output=True, text=True, timeout=20)
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return []
 
@@ -970,7 +970,7 @@ def main() -> int:
     parser.add_argument("--log-every", type=int, default=5, help="Training logging interval.")
     parser.add_argument("--valid-niter", type=int, default=5, help="Validation interval in training iterations.")
     parser.add_argument("--top-n", type=int, default=3, help="Number of segments to request during sample inference.")
-    parser.add_argument("--wait-timeout", type=int, default=120, help="Seconds to wait for services to respond.")
+    parser.add_argument("--wait-timeout", type=int, default=240, help="Seconds to wait for services to respond.")
     parser.add_argument(
         "--request-concurrency",
         type=int,
@@ -1176,7 +1176,7 @@ def main() -> int:
                         valid_niter=args.valid_niter,
                     ),
                 },
-                timeout=3600,
+                timeout=7200,
             ),
         )
 
@@ -1199,7 +1199,7 @@ def main() -> int:
                         "text_processed_uri": sample_inference_record["text_processed_uri"],
                         "top_n": args.top_n,
                     },
-                    timeout=1200,
+                    timeout=2400,
                 ),
             )
 
@@ -1227,7 +1227,7 @@ def main() -> int:
                     "features_root_uri": "shared://features/visual",
                     "metrics": metric_list,
                 },
-                timeout=3600,
+                timeout=7200,
             ),
         )
 

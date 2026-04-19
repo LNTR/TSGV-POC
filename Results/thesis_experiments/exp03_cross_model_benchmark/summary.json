@@ -1,12 +1,25 @@
 {
   "status": "partial",
-  "reason": "The full TGN dataset workflow was not run in this smoke-only pass. The prior Results/compose_dataset_60_20_20 artifact referenced in the prompt was not present in this checkout, and Docker Compose image builds were blocked by local Docker CLI issues. TALL measurements were left not_run because the requested follow-up scope was TGN-only.",
-  "tgn_scores": "not_run",
+  "reason": "The prior Results/compose_dataset_60_20_20 artifact is present in this checkout and was used to recover the TGN split fingerprint plus previously recorded TGN scores and phase timings. However, the full benchmark was not rerun in this pass, and no matched second-model run was executed. TALL measurements were left not_run because the requested follow-up scope was TGN-only.",
+  "tgn_scores": {
+    "R@1_IOU0.5": 0.0,
+    "R@3_IOU0.5": 0.0
+  },
   "tall_scores": "not_run",
-  "tgn_phase_timings_sec": "not_run",
+  "tgn_phase_timings_sec": {
+    "preprocess": 8218.184,
+    "text_processing": 260.132,
+    "training": 286.123,
+    "inference": 0.59,
+    "evaluation": 316.266
+  },
   "tall_phase_timings_sec": "not_run",
-  "metric_list": "not_run",
-  "split_fingerprint": "not_run",
+  "metric_list": [
+    "R@1_IOU0.5",
+    "R@3_IOU0.5"
+  ],
+  "split_fingerprint": "sha256:69b39fef1e037686f45ffd2a41f1ed619fb8c0ac3608244ad2dc8350872956b0",
+  "tgn_artifact_source": "Results/compose_dataset_60_20_20/summary.json",
   "smoke_checks_passed": 2,
   "smoke_checks": [
     {

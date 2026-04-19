@@ -1,4 +1,16 @@
-ls -la Results
+find Results/compose_dataset_60_20_20 -maxdepth 2 -type f | sort
+cat Results/compose_dataset_60_20_20/summary.json
+cat Results/compose_dataset_60_20_20/model.bin.metrics.json
+python3 - <<'PY'
+from pathlib import Path
+import hashlib
+root = Path('Results/compose_dataset_60_20_20')
+h = hashlib.sha256()
+for name in ['train.json', 'val.json', 'test.json']:
+    h.update(name.encode())
+    h.update((root / name).read_bytes())
+print(h.hexdigest())
+PY
 docker compose -f docker-compose.yml up --build -d mongodb redis training-service inference-service evaluation-service text-processing-service visual-feature-extraction-service visual-preprocessing-service
 DOCKER_BUILDKIT=0 docker compose -f docker-compose.yml up --build -d mongodb redis training-service inference-service evaluation-service text-processing-service visual-feature-extraction-service visual-preprocessing-service
 tmpdir=$(mktemp -d) && DOCKER_CONFIG="$tmpdir" DOCKER_BUILDKIT=0 docker compose -f docker-compose.yml up --build -d mongodb redis training-service inference-service evaluation-service text-processing-service visual-feature-extraction-service visual-preprocessing-service

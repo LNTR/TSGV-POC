@@ -3,10 +3,14 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
+import platform
 import random
 import re
+import shlex
 import shutil
+import socket
 import subprocess
 import sys
 import threading
@@ -403,6 +407,136 @@ def write_timeline_csv(path: Path, rows: list[dict[str, Any]]) -> None:
             writer.writerow({field: row.get(field, "") for field in fieldnames})
 
 
+def ordered_metric_list(top_n: int) -> list[str]:
+    metrics = ["R@1_IOU0.5", f"R@{top_n}_IOU0.5"]
+    deduped: list[str] = []
+    for metric in metrics:
+        if metric not in deduped:
+            deduped.append(metric)
+    return deduped
+
+
+def compute_split_fingerprint(train_split_text: str, val_split_text: str, test_split_text: str) -> str:
+    digest = hashlib.sha256()
+    for name, text in [
+        ("train", train_split_text),
+        ("val", val_split_text),
+        ("test", test_split_text),
+    ]:
+        digest.update(name.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(text.encode("utf-8"))
+        digest.update(b"\0")
+    return f"sha256:{digest.hexdigest()}"
+
+
+def detect_gpu_models() -> list[str]:
+    command = ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"]
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return []
+
+    if result.returncode != 0:
+        return []
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def current_command_line() -> str:
+    argv = [sys.executable, *sys.argv]
+    return " ".join(shlex.quote(part) for part in argv)
+
+
+def build_exp03_summary(workflow_summary: dict[str, Any], reason: str) -> dict[str, Any]:
+    return {
+        "status": "complete",
+        "scope": "tgn_only",
+        "reason": reason,
+        "tgn_scores": workflow_summary.get("evaluation_scores", {}),
+        "tall_scores": "not_run",
+        "tgn_phase_timings_sec": workflow_summary.get("phase_timings_sec", {}),
+        "tall_phase_timings_sec": "not_run",
+        "metric_list": workflow_summary.get("metric_list", []),
+        "split_fingerprint": workflow_summary.get("split_fingerprint", "not_run"),
+        "tgn_artifact_source": workflow_summary.get("files", {}).get("summary"),
+        "workflow_duration_sec": workflow_summary.get("workflow_duration_sec"),
+        "iterations_completed": workflow_summary.get("iterations_completed"),
+        "training_device": workflow_summary.get("training_device"),
+        "video_counts": workflow_summary.get("video_counts", {}),
+        "record_counts": workflow_summary.get("record_counts", {}),
+    }
+
+
+def build_exp03_writeup(exp03_summary: dict[str, Any]) -> str:
+    scores = exp03_summary.get("tgn_scores", {})
+    timings = exp03_summary.get("tgn_phase_timings_sec", {})
+    metric_list = exp03_summary.get("metric_list", [])
+    fingerprint = exp03_summary.get("split_fingerprint", "not_run")
+    score_parts = ", ".join(f"{name} = {value}" for name, value in scores.items()) or "no scores were recorded"
+    timing_parts = ", ".join(f"{name} {value} seconds" for name, value in timings.items()) or "no phase timings were recorded"
+    metric_text = ", ".join(metric_list) if metric_list else "no metrics were requested"
+    return (
+        "The TGN Docker Compose dataset workflow was run against the generated 60/20/20 split and wrote a complete "
+        "TGN benchmark artifact. `summary.json` records the requested metric list as "
+        f"`{metric_text}` with TGN evaluation scores of {score_parts}. The split fingerprint recorded for this run is "
+        f"`{fingerprint}`.\n\n"
+        "Per-phase wall-clock timings were also captured by the workflow. `summary.json` records "
+        f"{timing_parts}. `tall_scores` and `tall_phase_timings_sec` remain `\"not_run\"` because the follow-up scope "
+        "for this experiment was restricted to TGN-only execution."
+    )
+
+
+def build_exp03_readme(
+    workflow_summary: dict[str, Any],
+    command_line: str,
+) -> str:
+    gpu_models = detect_gpu_models()
+    gpu_label = ", ".join(gpu_models) if gpu_models else "GPU not detected by nvidia-smi"
+    return (
+        f"This run was captured on {datetime.now(timezone.utc).isoformat()} from host `{socket.gethostname()}` "
+        f"running `{platform.platform()}` with Python `{platform.python_version()}`. The workflow tag was "
+        f"`{workflow_summary.get('tag')}`, the dataset root was `{workflow_summary.get('dataset_root')}`, the training "
+        f"device reported by the workflow was `{workflow_summary.get('training_device')}`, and the detected GPU model(s) "
+        f"were `{gpu_label}`. The benchmark was executed with `{command_line}`."
+    )
+
+
+def write_exp03_bundle(
+    bundle_root: Path,
+    workflow_summary: dict[str, Any],
+    model_metrics: dict[str, Any],
+    command_line: str,
+) -> None:
+    bundle_root.mkdir(parents=True, exist_ok=True)
+    logs_root = bundle_root / "logs"
+    screenshots_root = bundle_root / "screenshots"
+    logs_root.mkdir(parents=True, exist_ok=True)
+    screenshots_root.mkdir(parents=True, exist_ok=True)
+
+    reason = "The workflow produced a TGN-only benchmark artifact. TALL fields were left not_run because the experiment scope was restricted to TGN."
+    exp03_summary = build_exp03_summary(workflow_summary, reason=reason)
+
+    (bundle_root / "summary.json").write_text(json.dumps(exp03_summary, indent=2) + "\n")
+    (bundle_root / "writeup.md").write_text(build_exp03_writeup(exp03_summary) + "\n")
+    (bundle_root / "command.txt").write_text(command_line + "\n")
+    (bundle_root / "README.md").write_text(build_exp03_readme(workflow_summary, command_line) + "\n")
+
+    workflow_excerpt = {
+        "tag": workflow_summary.get("tag"),
+        "workflow_duration_sec": workflow_summary.get("workflow_duration_sec"),
+        "phase_timings_sec": workflow_summary.get("phase_timings_sec", {}),
+        "evaluation_scores": workflow_summary.get("evaluation_scores", {}),
+        "metric_list": workflow_summary.get("metric_list", []),
+        "split_fingerprint": workflow_summary.get("split_fingerprint"),
+        "iterations_completed": workflow_summary.get("iterations_completed"),
+        "training_device": workflow_summary.get("training_device"),
+        "record_counts": workflow_summary.get("record_counts", {}),
+        "sample_inference": workflow_summary.get("sample_inference", {}),
+    }
+    (logs_root / "workflow_summary_excerpt.json").write_text(json.dumps(workflow_excerpt, indent=2) + "\n")
+    (logs_root / "model_metrics_excerpt.json").write_text(json.dumps(model_metrics, indent=2) + "\n")
+
+
 def run_compose(implementation_root: Path, args: list[str]) -> None:
     cmd = [
         "docker",
@@ -635,6 +769,14 @@ def main() -> int:
         action="store_true",
         help="When used with --compose-managed, leave the Compose services running after the workflow.",
     )
+    parser.add_argument(
+        "--exp03-bundle-dir",
+        default=None,
+        help=(
+            "Optional directory where a thesis-ready exp03_cross_model_benchmark bundle should be written after a "
+            "successful TGN workflow run."
+        ),
+    )
     args = parser.parse_args()
 
     smoke_root = Path(__file__).resolve().parent
@@ -665,6 +807,7 @@ def main() -> int:
     phase_stats: dict[str, dict[str, Any]] = {}
     timeline_rows: list[dict[str, Any]] = []
     workflow_started_at = time.perf_counter()
+    command_line = current_command_line()
 
     try:
         if args.compose_managed:
@@ -774,6 +917,8 @@ def main() -> int:
         val_split_path.write_text(val_split_text)
         test_split_path.write_text(test_split_text)
 
+        metric_list = ordered_metric_list(args.top_n)
+
         training_response = run_timed_phase(
             phase_stats,
             timeline_rows,
@@ -843,7 +988,7 @@ def main() -> int:
                     "model_uri": shared_uri("models", f"{args.tag}.bin"),
                     "test_split_uri": shared_uri("splits", "test", f"{args.tag}.json"),
                     "features_root_uri": "shared://features/visual",
-                    "metrics": ["R@1_IOU0.5", f"R@{args.top_n}_IOU0.5"],
+                    "metrics": metric_list,
                 },
                 timeout=3600,
             ),
@@ -862,6 +1007,16 @@ def main() -> int:
         copy_service_file_if_exists(model_path, run_root / "model.bin")
         copy_service_file_if_exists(Path(str(model_path) + ".optim"), run_root / "model.bin.optim")
         copy_service_file_if_exists(Path(str(model_path) + ".metrics.json"), run_root / "model.bin.metrics.json")
+        model_metrics_path = run_root / "model.bin.metrics.json"
+        model_metrics: dict[str, Any] = {}
+        if model_metrics_path.exists():
+            model_metrics = json.loads(model_metrics_path.read_text())
+
+        split_fingerprint = compute_split_fingerprint(
+            train_split_text=train_split_text,
+            val_split_text=val_split_text,
+            test_split_text=test_split_text,
+        )
 
         summary = {
             "tag": args.tag,
@@ -889,6 +1044,8 @@ def main() -> int:
             "training_device": training_response["metadata"].get("device"),
             "iterations_completed": training_response["metadata"].get("iterations_completed"),
             "model_uri": training_response["metadata"].get("model_uri"),
+            "metric_list": metric_list,
+            "split_fingerprint": split_fingerprint,
             "phase_timings_sec": {
                 phase_name: round(float(phase_entry["duration_sec"]), 3)
                 for phase_name, phase_entry in phase_stats.items()
@@ -913,6 +1070,17 @@ def main() -> int:
             "cleanup_requested": args.cleanup,
         }
         host_summary_path.write_text(json.dumps(summary, indent=2) + "\n")
+
+        if args.exp03_bundle_dir:
+            write_exp03_bundle(
+                bundle_root=(repo_root / args.exp03_bundle_dir).resolve()
+                if not Path(args.exp03_bundle_dir).is_absolute()
+                else Path(args.exp03_bundle_dir),
+                workflow_summary=summary,
+                model_metrics=model_metrics,
+                command_line=command_line,
+            )
+
         print(json.dumps(summary, indent=2))
     finally:
         if args.cleanup:

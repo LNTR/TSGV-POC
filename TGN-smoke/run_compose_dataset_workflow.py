@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -253,6 +254,7 @@ def sample_phase_memory(
     timeline_rows: list[dict[str, Any]],
     workflow_started_at: float,
     phase_name: str,
+    stats_lock: threading.Lock,
 ) -> None:
     while not stop_event.is_set():
         snapshot = collect_memory_snapshot(services)
@@ -261,26 +263,27 @@ def sample_phase_memory(
             gpu_snapshot = collect_gpu_snapshot()
             captured_at = datetime.now(timezone.utc).isoformat()
             elapsed_sec = round(time.perf_counter() - workflow_started_at, 3)
-            for service_name, service_sample in snapshot.items():
-                timeline_rows.append(
-                    {
-                        "timestamp_utc": captured_at,
-                        "elapsed_sec": elapsed_sec,
-                        "phase": phase_name,
-                        "service": service_name,
-                        "container_name": service_sample["container_name"],
-                        "cpu_percent": round(float(service_sample.get("cpu_percent", 0.0)), 3),
-                        "memory_usage_bytes": int(service_sample.get("memory_usage_bytes", 0)),
-                        "memory_limit_bytes": int(service_sample.get("memory_limit_bytes", 0)),
-                        "memory_percent": round(float(service_sample.get("memory_percent", 0.0)), 3),
-                        "gpu_available": gpu_snapshot["available"],
-                        "gpu_count": int(gpu_snapshot["gpu_count"]),
-                        "gpu_memory_used_mb": int(gpu_snapshot["memory_used_mb"]),
-                        "gpu_memory_total_mb": int(gpu_snapshot["memory_total_mb"]),
-                        "gpu_utilization_percent_max": round(float(gpu_snapshot["utilization_percent_max"]), 3),
-                        "gpu_per_device": flatten_gpu_snapshot(gpu_snapshot["per_gpu"]),
-                    }
-                )
+            with stats_lock:
+                for service_name, service_sample in snapshot.items():
+                    timeline_rows.append(
+                        {
+                            "timestamp_utc": captured_at,
+                            "elapsed_sec": elapsed_sec,
+                            "phase": phase_name,
+                            "service": service_name,
+                            "container_name": service_sample["container_name"],
+                            "cpu_percent": round(float(service_sample.get("cpu_percent", 0.0)), 3),
+                            "memory_usage_bytes": int(service_sample.get("memory_usage_bytes", 0)),
+                            "memory_limit_bytes": int(service_sample.get("memory_limit_bytes", 0)),
+                            "memory_percent": round(float(service_sample.get("memory_percent", 0.0)), 3),
+                            "gpu_available": gpu_snapshot["available"],
+                            "gpu_count": int(gpu_snapshot["gpu_count"]),
+                            "gpu_memory_used_mb": int(gpu_snapshot["memory_used_mb"]),
+                            "gpu_memory_total_mb": int(gpu_snapshot["memory_total_mb"]),
+                            "gpu_utilization_percent_max": round(float(gpu_snapshot["utilization_percent_max"]), 3),
+                            "gpu_per_device": flatten_gpu_snapshot(gpu_snapshot["per_gpu"]),
+                        }
+                    )
         stop_event.wait(interval_sec)
 
 
@@ -289,41 +292,43 @@ def record_phase_stats(
     phase_name: str,
     duration_sec: float,
     samples: list[dict[str, dict[str, Any]]],
+    stats_lock: threading.Lock,
 ) -> None:
-    phase_entry = phase_stats.setdefault(
-        phase_name,
-        {
-            "duration_sec": 0.0,
-            "calls": 0,
-            "services": {},
-        },
-    )
-    phase_entry["duration_sec"] += duration_sec
-    phase_entry["calls"] += 1
+    with stats_lock:
+        phase_entry = phase_stats.setdefault(
+            phase_name,
+            {
+                "duration_sec": 0.0,
+                "calls": 0,
+                "services": {},
+            },
+        )
+        phase_entry["duration_sec"] += duration_sec
+        phase_entry["calls"] += 1
 
-    for sample in samples:
-        for service_name, service_sample in sample.items():
-            service_entry = phase_entry["services"].setdefault(
-                service_name,
-                {
-                    "samples": 0,
-                    "sum_memory_bytes": 0,
-                    "max_memory_bytes": 0,
-                    "last_memory_bytes": 0,
-                    "max_memory_percent": 0.0,
-                    "memory_limit_bytes": 0,
-                },
-            )
-            memory_usage_bytes = int(service_sample.get("memory_usage_bytes", 0))
-            memory_limit_bytes = int(service_sample.get("memory_limit_bytes", 0))
-            memory_percent = float(service_sample.get("memory_percent", 0.0))
+        for sample in samples:
+            for service_name, service_sample in sample.items():
+                service_entry = phase_entry["services"].setdefault(
+                    service_name,
+                    {
+                        "samples": 0,
+                        "sum_memory_bytes": 0,
+                        "max_memory_bytes": 0,
+                        "last_memory_bytes": 0,
+                        "max_memory_percent": 0.0,
+                        "memory_limit_bytes": 0,
+                    },
+                )
+                memory_usage_bytes = int(service_sample.get("memory_usage_bytes", 0))
+                memory_limit_bytes = int(service_sample.get("memory_limit_bytes", 0))
+                memory_percent = float(service_sample.get("memory_percent", 0.0))
 
-            service_entry["samples"] += 1
-            service_entry["sum_memory_bytes"] += memory_usage_bytes
-            service_entry["last_memory_bytes"] = memory_usage_bytes
-            service_entry["max_memory_bytes"] = max(service_entry["max_memory_bytes"], memory_usage_bytes)
-            service_entry["max_memory_percent"] = max(service_entry["max_memory_percent"], memory_percent)
-            service_entry["memory_limit_bytes"] = max(service_entry["memory_limit_bytes"], memory_limit_bytes)
+                service_entry["samples"] += 1
+                service_entry["sum_memory_bytes"] += memory_usage_bytes
+                service_entry["last_memory_bytes"] = memory_usage_bytes
+                service_entry["max_memory_bytes"] = max(service_entry["max_memory_bytes"], memory_usage_bytes)
+                service_entry["max_memory_percent"] = max(service_entry["max_memory_percent"], memory_percent)
+                service_entry["memory_limit_bytes"] = max(service_entry["memory_limit_bytes"], memory_limit_bytes)
 
 
 def finalize_phase_stats(phase_stats: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -361,13 +366,14 @@ def run_timed_phase(
     phase_name: str,
     services: list[str],
     stats_interval_sec: float,
+    stats_lock: threading.Lock,
     func,
 ):
     samples: list[dict[str, dict[str, Any]]] = []
     stop_event = threading.Event()
     worker = threading.Thread(
         target=sample_phase_memory,
-        args=(services, stats_interval_sec, stop_event, samples, timeline_rows, workflow_started_at, phase_name),
+        args=(services, stats_interval_sec, stop_event, samples, timeline_rows, workflow_started_at, phase_name, stats_lock),
         daemon=True,
     )
     start = time.perf_counter()
@@ -378,7 +384,98 @@ def run_timed_phase(
         duration_sec = time.perf_counter() - start
         stop_event.set()
         worker.join(timeout=stats_interval_sec + 1.0)
-        record_phase_stats(phase_stats, phase_name, duration_sec, samples)
+        record_phase_stats(phase_stats, phase_name, duration_sec, samples, stats_lock)
+
+
+def process_video_pipeline(
+    split_name: str,
+    video_id: str,
+    args: argparse.Namespace,
+    storage_root: Path,
+    phase_stats: dict[str, dict[str, Any]],
+    timeline_rows: list[dict[str, Any]],
+    workflow_started_at: float,
+    stats_lock: threading.Lock,
+) -> dict[str, Any]:
+    preprocess_response = run_timed_phase(
+        phase_stats,
+        timeline_rows,
+        workflow_started_at,
+        "preprocess",
+        PHASE_SERVICES["preprocess"],
+        args.stats_interval_sec,
+        stats_lock,
+        lambda: json_request(
+            "POST",
+            f"{args.base_url}:{SERVICE_PORTS['visual-preprocessing-service']}/jobs/preprocess",
+            payload={
+                "input_video_uri": f"file:///app/dataset/videos/{video_id}.avi",
+                "output_frame_size": args.output_frame_size,
+                "sample_every_sec": args.sample_every_sec,
+                "feature_service_url": args.feature_service_url,
+            },
+            timeout=1800,
+        ),
+    )
+
+    feature_device = None
+    if args.require_feature_gpu:
+        feature_device = ensure_feature_extraction_used_gpu(
+            preprocess_response=preprocess_response,
+            storage_root=storage_root,
+            video_id=video_id,
+        )
+
+    processed = run_timed_phase(
+        phase_stats,
+        timeline_rows,
+        workflow_started_at,
+        "text_processing",
+        PHASE_SERVICES["text_processing"],
+        args.stats_interval_sec,
+        stats_lock,
+        lambda: json_request(
+            "POST",
+            f"{args.base_url}:{SERVICE_PORTS['text-processing-service']}/jobs/process-aligned-text",
+            payload={
+                "input_alignment_uri": f"file:///app/dataset/texts/{video_id}.aligned.tsv",
+                "artifact_uri": "shared://artifacts/text/v1",
+                "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
+                "base_name_prefix": f"{args.tag}-{video_id}",
+                "fps": args.fps,
+            },
+            timeout=600,
+        ),
+    )
+
+    split_output_records: list[dict[str, Any]] = []
+    evaluation_output_records: list[dict[str, Any]] = []
+    generated_text_processed_uris: list[str] = []
+    for record in processed.get("records", []):
+        normalized_record = {
+            "base_name": record["base_name"],
+            "video_features_uri": record["video_features_uri"],
+            "text_processed_uri": record["text_processed_uri"],
+        }
+        split_output_records.append(normalized_record)
+        generated_text_processed_uris.append(record["text_processed_uri"])
+
+        if split_name == "test":
+            evaluation_record = dict(record)
+            evaluation_record["video_id"] = video_id
+            evaluation_output_records.append(evaluation_record)
+
+    metadata_path = storage_root / "features" / "metadata" / f"{video_id}.vf.meta.json"
+    if feature_device is None and metadata_path.exists():
+        metadata = json.loads(metadata_path.read_text())
+        feature_device = metadata.get("device_used", "unknown")
+
+    return {
+        "feature_device": feature_device,
+        "split_records": split_output_records,
+        "evaluation_records": evaluation_output_records,
+        "generated_text_processed_uris": generated_text_processed_uris,
+    }
 
 
 def write_timeline_csv(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -736,6 +833,12 @@ def main() -> int:
     parser.add_argument("--top-n", type=int, default=3, help="Number of segments to request during sample inference.")
     parser.add_argument("--wait-timeout", type=int, default=120, help="Seconds to wait for services to respond.")
     parser.add_argument(
+        "--request-concurrency",
+        type=int,
+        default=10,
+        help="Maximum number of per-video preprocess/text-processing pipelines to run concurrently.",
+    )
+    parser.add_argument(
         "--stats-interval-sec",
         type=float,
         default=2.0,
@@ -778,6 +881,8 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    if args.request_concurrency < 1:
+        raise RuntimeError("--request-concurrency must be at least 1")
 
     smoke_root = Path(__file__).resolve().parent
     repo_root = smoke_root.parent
@@ -806,6 +911,7 @@ def main() -> int:
     generated_text_processed_uris: list[str] = []
     phase_stats: dict[str, dict[str, Any]] = {}
     timeline_rows: list[dict[str, Any]] = []
+    stats_lock = threading.Lock()
     workflow_started_at = time.perf_counter()
     command_line = current_command_line()
 
@@ -831,76 +937,40 @@ def main() -> int:
         sample_inference_record: dict[str, Any] | None = None
 
         for split_name, split_ids in [("train", train_ids), ("val", val_ids), ("test", test_ids)]:
+            if not split_ids:
+                continue
+
+            max_workers = max(1, min(args.request_concurrency, len(split_ids)))
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {
+                    video_id: executor.submit(
+                        process_video_pipeline,
+                        split_name,
+                        video_id,
+                        args,
+                        storage_root,
+                        phase_stats,
+                        timeline_rows,
+                        workflow_started_at,
+                        stats_lock,
+                    )
+                    for video_id in split_ids
+                }
+                ordered_results = {video_id: futures[video_id].result() for video_id in split_ids}
+
             for video_id in split_ids:
-                preprocess_response = run_timed_phase(
-                    phase_stats,
-                    timeline_rows,
-                    workflow_started_at,
-                    "preprocess",
-                    PHASE_SERVICES["preprocess"],
-                    args.stats_interval_sec,
-                    lambda video_id=video_id: json_request(
-                        "POST",
-                        f"{args.base_url}:{SERVICE_PORTS['visual-preprocessing-service']}/jobs/preprocess",
-                        payload={
-                            "input_video_uri": f"file:///app/dataset/videos/{video_id}.avi",
-                            "output_frame_size": args.output_frame_size,
-                            "sample_every_sec": args.sample_every_sec,
-                            "feature_service_url": args.feature_service_url,
-                        },
-                        timeout=1800,
-                    ),
-                )
+                video_result = ordered_results[video_id]
+                feature_device = video_result.get("feature_device")
+                if feature_device is not None:
+                    feature_devices[video_id] = feature_device
 
-                if args.require_feature_gpu:
-                    feature_devices[video_id] = ensure_feature_extraction_used_gpu(
-                        preprocess_response=preprocess_response,
-                        storage_root=storage_root,
-                        video_id=video_id,
-                    )
+                split_records[split_name].extend(video_result["split_records"])
+                generated_text_processed_uris.extend(video_result["generated_text_processed_uris"])
 
-                processed = run_timed_phase(
-                    phase_stats,
-                    timeline_rows,
-                    workflow_started_at,
-                    "text_processing",
-                    PHASE_SERVICES["text_processing"],
-                    args.stats_interval_sec,
-                    lambda video_id=video_id: json_request(
-                        "POST",
-                        f"{args.base_url}:{SERVICE_PORTS['text-processing-service']}/jobs/process-aligned-text",
-                        payload={
-                            "input_alignment_uri": f"file:///app/dataset/texts/{video_id}.aligned.tsv",
-                            "artifact_uri": "shared://artifacts/text/v1",
-                            "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
-                            "base_name_prefix": f"{args.tag}-{video_id}",
-                            "fps": args.fps,
-                        },
-                        timeout=600,
-                    ),
-                )
-
-                for record in processed.get("records", []):
-                    split_records[split_name].append(
-                        {
-                            "base_name": record["base_name"],
-                            "video_features_uri": record["video_features_uri"],
-                            "text_processed_uri": record["text_processed_uri"],
-                        }
-                    )
-                    generated_text_processed_uris.append(record["text_processed_uri"])
-
-                    if split_name == "test":
-                        evaluation_record = dict(record)
-                        evaluation_record["video_id"] = video_id
-                        evaluation_records.append(evaluation_record)
-                        if sample_inference_record is None:
-                            sample_inference_record = evaluation_record
-
-                metadata_path = storage_root / "features" / "metadata" / f"{video_id}.vf.meta.json"
-                if video_id not in feature_devices and metadata_path.exists():
-                    metadata = json.loads(metadata_path.read_text())
-                    feature_devices[video_id] = metadata.get("device_used", "unknown")
+                if split_name == "test":
+                    evaluation_records.extend(video_result["evaluation_records"])
+                    if sample_inference_record is None and video_result["evaluation_records"]:
+                        sample_inference_record = video_result["evaluation_records"][0]
 
         for split_name in ["train", "val", "test"]:
             if not split_records[split_name]:
@@ -926,6 +996,7 @@ def main() -> int:
             "training",
             PHASE_SERVICES["training"],
             args.stats_interval_sec,
+            stats_lock,
             lambda: json_request(
                 "POST",
                 f"{args.base_url}:{SERVICE_PORTS['training-service']}/jobs/train",
@@ -954,6 +1025,7 @@ def main() -> int:
                 "inference",
                 PHASE_SERVICES["inference"],
                 args.stats_interval_sec,
+                stats_lock,
                 lambda: json_request(
                     "POST",
                     f"{args.base_url}:{SERVICE_PORTS['inference-service']}/infer/ground",
@@ -974,6 +1046,7 @@ def main() -> int:
             "evaluation",
             PHASE_SERVICES["evaluation"],
             args.stats_interval_sec,
+            stats_lock,
             lambda: json_request(
                 "POST",
                 f"{args.base_url}:{SERVICE_PORTS['evaluation-service']}/jobs/evaluate",

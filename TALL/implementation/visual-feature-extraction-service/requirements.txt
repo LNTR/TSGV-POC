@@ -1,0 +1,9 @@
+fastapi==0.115.0
+uvicorn==0.30.6
+pydantic==2.9.2
+numpy==1.26.4
+torch==2.4.1
+torchvision==0.19.1
+requests==2.32.3
+redis==5.0.8
+pymongo==4.10.1

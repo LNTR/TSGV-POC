@@ -1123,7 +1123,7 @@ def run_exp10_service(
     service_logs.mkdir(parents=True, exist_ok=True)
     service_path, hpa_path = deploy_service(kubectl_bin, namespace, service_name, service_logs)
     try:
-        warmup_before = run_validation_request(kubectl_bin, namespace, service_name, service_logs)
+        run_validation_request(kubectl_bin, namespace, service_name, service_logs)
 
         calibration: list[dict[str, Any]] = []
         for concurrency in calibration_concurrency:
@@ -1183,7 +1183,7 @@ def run_exp10_service(
         scale_down_observed, scale_down_settle_sec = cooldown_settle(peak, cooldown_timeline)
         hpa_after = capture_hpa_description(kubectl_bin, namespace, service_name)
         write_text(service_logs / f"{service_name}.hpa.after.txt", hpa_after)
-        warmup_after = run_validation_request(kubectl_bin, namespace, service_name, service_logs)
+        run_validation_request(kubectl_bin, namespace, service_name, service_logs)
 
         return {
             "service": service_name,
@@ -1221,8 +1221,6 @@ def run_exp10_service(
             "scale_down_settle_sec": scale_down_settle_sec,
             "pod_resource_stats": resource_summary(pod_metrics),
             "replica_timeline": combined_timeline,
-            "warmup_before": warmup_before,
-            "warmup_after": warmup_after,
         }
     finally:
         remove_service(kubectl_bin, service_path, hpa_path)

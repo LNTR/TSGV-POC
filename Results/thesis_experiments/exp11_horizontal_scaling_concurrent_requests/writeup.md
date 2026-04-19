@@ -1,3 +1,3 @@
-The concurrent horizontal-scaling experiment was deferred on this host. `kubectl` was not installed, so the single-replica baseline, HPA-enabled comparison, and pod-metrics collection could not be run.
+The concurrent horizontal-scaling experiment compared single-replica and HPA-enabled runs across the fixed concurrency sweep `1, 5, 10, 20, 40`. `inference-service` recorded baseline throughput `24.82` rps and HPA-enabled throughput `35.59` rps at concurrency `40`; `text-processing-service` recorded baseline throughput `33.31` rps and HPA-enabled throughput `47.78` rps at concurrency `40`.
 
-All quantitative scaling fields were left as `not_run`. No latency, throughput, or replica-growth claim was made from this machine.
+Per-stage latency, throughput, non-2xx rate, replica maxima, and pod resource measurements were captured in `summary.json`.

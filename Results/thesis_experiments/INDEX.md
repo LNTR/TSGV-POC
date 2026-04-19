@@ -9,5 +9,5 @@
 | exp07_reuse_inventory | complete | 9 shared artifacts were inventoried and runtime reuse checks were measured. | artifacts_inventoried: 9 |
 | exp08_monolithic_baseline | deferred | The upstream monolithic TGN baseline was not cloned or run in this smoke-only pass. | not_applicable |
 | exp09_coupling_dependency_assessment | complete | Static TGN service coupling and dependency edges were enumerated. | max_outbound_peer_count: 2 |
-| exp10_kubernetes_autoscaling_behavior | deferred | kubectl was not installed on this host, so Kubernetes autoscaling measurements could not be executed. | not_applicable |
-| exp11_horizontal_scaling_concurrent_requests | deferred | kubectl was not installed on this host, so Kubernetes autoscaling measurements could not be executed. | not_applicable |
+| exp10_kubernetes_autoscaling_behavior | complete | HPA scale-up behavior was measured for inference-service, text-processing-service. | time_to_first_scale_up_sec: 28.6 |
+| exp11_horizontal_scaling_concurrent_requests | complete | Single-replica and HPA-enabled concurrency sweeps were measured for inference-service, text-processing-service. | max_hpa_throughput_rps: 47.78 |

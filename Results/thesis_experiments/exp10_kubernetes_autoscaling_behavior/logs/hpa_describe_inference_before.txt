@@ -1,0 +1,12 @@
+Name:                                                  inference-service-hpa
+Namespace:                                             default
+Reference:                                             Deployment/inference-service
+Metrics:                                               ( current / target )
+  resource cpu on pods  :                              28% / 60%
+Min replicas:                                          1
+Max replicas:                                          5
+Deployment pods:                                       1 current / 1 desired
+Conditions:
+  AbleToScale     True    ReadyForNewScale    recommended size matches current size
+  ScalingActive   True    ValidMetricFound    the HPA was able to calculate a replica count from cpu resource utilization
+  ScalingLimited  False   DesiredWithinRange  the desired count is within the acceptable range

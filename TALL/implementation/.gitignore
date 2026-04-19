@@ -1,0 +1,33 @@
+# Python runtime caches
+**/__pycache__/
+*.py[cod]
+
+# Local virtualenvs and test caches
+.venv/
+.pytest_cache/
+
+# Local runtime outputs under implementation/storage
+storage/features/metadata/*
+!storage/features/metadata/.gitkeep
+storage/features/visual/*
+!storage/features/visual/.gitkeep
+storage/frames/metadata/*
+!storage/frames/metadata/.gitkeep
+storage/frames/processed/*
+!storage/frames/processed/.gitkeep
+storage/models/*
+!storage/models/.gitkeep
+storage/results/dispatch/*
+!storage/results/dispatch/.gitkeep
+storage/results/evaluation/*
+!storage/results/evaluation/.gitkeep
+storage/results/inference/*
+!storage/results/inference/.gitkeep
+storage/splits/test/*
+!storage/splits/test/.gitkeep
+storage/splits/train/*
+!storage/splits/train/.gitkeep
+storage/splits/val/*
+!storage/splits/val/.gitkeep
+storage/text/processed/*
+!storage/text/processed/.gitkeep

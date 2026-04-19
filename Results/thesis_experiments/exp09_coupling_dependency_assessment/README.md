@@ -1,1 +1,0 @@
-Run context: 2026-04-18 on host `ucsc-ThinkPad-T470p` (`Linux 6.17.0-20-generic`) with GPU `NVIDIA GeForce 940MX`. This experiment was static-only and inspected `TGN/implementation` plus shared repository artifacts without starting any new services.

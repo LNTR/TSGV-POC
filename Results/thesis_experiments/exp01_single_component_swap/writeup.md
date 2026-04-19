@@ -1,3 +1,0 @@
-The single-component swap was measured on a local kind cluster with `activeModel` fixed at `tall`. The `text-processing-service` entry under the `tall` model was changed to the `tgn` implementation with `compatibleModels` set to `[tgn, tall]` and `shared` set to `true`. The first successful request on the alias route was observed after `1.02` seconds.
-
-Only one alias target changed between the before and after snapshots. The MongoDB `routes` entry for `text-processing-service` changed from `tall-text-processing-service` to `tgn-text-processing-service`, and a request to `http://text-processing-service:8003/index.html` returned the `tgn` backend response.

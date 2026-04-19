@@ -1,1 +1,0 @@
-Run context: 2026-04-18 on host `ucsc-ThinkPad-T470p` (`Linux 6.17.0-20-generic`) with GPU `NVIDIA GeForce 940MX`. Static reuse inventory was taken from the checked-out TGN and shared routing code, and runtime reuse was measured against the live Docker Compose TGN services on this machine.

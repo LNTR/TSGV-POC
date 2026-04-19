@@ -1,2 +1,0 @@
-git remote -v
-find . -maxdepth 3 -type d | rg 'monolithic|upstream|baseline'

@@ -1,3 +1,0 @@
-Three historical changes were quantified from scoped `git show --shortstat` output using TGN-relevant paths. Commit `078edaf12ee83984d170942b9259fe8b4a3b25e4` touched `16` files with `417` insertions and `232` deletions, and commit `dd475266fa9879b8d491ffa32ec45a3bfb8efb42` touched `11` files with `66` insertions and `877` deletions. Both changes crossed shared or multi-service TGN paths and were marked as cross-service ripple changes.
-
-Commit `e77dd8112757e2935b4e6c33015d56b11ab4e094` was narrower. Its scoped shortstat covered `2` files and `1038` insertions with no deletions, and it was limited to `TGN-smoke/` and documentation paths rather than shared runtime services.

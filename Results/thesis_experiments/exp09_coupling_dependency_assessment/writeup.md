@@ -1,3 +1,0 @@
-The static dependency scan enumerated peer-service calls, shared-code imports, shared storage URIs, and infrastructure dependencies for the six TGN services. The maximum outbound peer fan-out observed in this scan was `2`, and the maximum inbound peer fan-in was `3`.
-
-The widest outbound coupling was observed in `visual-feature-extraction-service` and `text-processing-service`, each of which referenced both `training-service` and `inference-service`. The widest inbound coupling was observed in `inference-service`, which was referenced by `evaluation-service`, `text-processing-service`, and `visual-feature-extraction-service`. No composite coupling score was introduced; only the raw adjacency matrix and dependency counts were reported.

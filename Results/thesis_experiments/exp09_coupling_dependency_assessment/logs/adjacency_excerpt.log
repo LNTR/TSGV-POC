@@ -1,6 +1,0 @@
-visual-preprocessing-service -> visual-feature-extraction-service
-visual-feature-extraction-service -> training-service, inference-service
-text-processing-service -> training-service, inference-service
-evaluation-service -> inference-service
-max_outbound_peer_count: 2
-max_inbound_peer_count: 3

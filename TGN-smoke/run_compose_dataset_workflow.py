@@ -387,8 +387,69 @@ def run_timed_phase(
         record_phase_stats(phase_stats, phase_name, duration_sec, samples, stats_lock)
 
 
-def process_video_pipeline(
+def build_query_text(action: str, agent: str, object_name: str, location: str) -> str:
+    parts = []
+    if action:
+        parts.append(action)
+    if object_name:
+        parts.append(object_name)
+    if location:
+        parts.append(f"from {location}")
+    if agent:
+        parts.append(f"using {agent}")
+    return " ".join(parts)
+
+
+def parse_alignment_rows(input_alignment_path: Path, fps: float) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with input_alignment_path.open() as handle:
+        for row_index, raw_line in enumerate(handle):
+            line = raw_line.rstrip("\n")
+            if not line.strip():
+                continue
+
+            cols = line.split("\t")
+            if len(cols) < 2:
+                raise ValueError(f"alignment row {row_index} must include at least start and end frame")
+
+            start_frame = int(cols[0])
+            end_frame = int(cols[1])
+            action = cols[2].strip() if len(cols) > 2 else ""
+            agent = cols[3].strip() if len(cols) > 3 else ""
+            object_name = cols[4].strip() if len(cols) > 4 else ""
+            location = cols[5].strip() if len(cols) > 5 else ""
+
+            rows.append(
+                {
+                    "row_index": row_index,
+                    "start_frame": start_frame,
+                    "end_frame": end_frame,
+                    "start_time": start_frame / fps,
+                    "end_time": end_frame / fps,
+                    "query_text": build_query_text(action, agent, object_name, location),
+                }
+            )
+
+    if not rows:
+        raise ValueError(f"alignment file contains no rows: {input_alignment_path}")
+    return rows
+
+
+def write_generated_text_query(
+    storage_root: Path,
+    tag: str,
     split_name: str,
+    base_name: str,
+    query_text: str,
+) -> tuple[Path, str]:
+    relative_path = Path("text") / "raw" / tag / split_name / f"{base_name}.txt"
+    absolute_path = storage_root / relative_path
+    absolute_path.parent.mkdir(parents=True, exist_ok=True)
+    absolute_path.write_text(query_text + "\n")
+    return absolute_path, shared_uri(*relative_path.parts)
+
+
+def process_visual_video(
     video_id: str,
     args: argparse.Namespace,
     storage_root: Path,
@@ -426,45 +487,6 @@ def process_video_pipeline(
             video_id=video_id,
         )
 
-    processed = run_timed_phase(
-        phase_stats,
-        timeline_rows,
-        workflow_started_at,
-        "text_processing",
-        PHASE_SERVICES["text_processing"],
-        args.stats_interval_sec,
-        stats_lock,
-        lambda: json_request(
-            "POST",
-            f"{args.base_url}:{SERVICE_PORTS['text-processing-service']}/jobs/process-aligned-text",
-            payload={
-                "input_alignment_uri": f"file:///app/dataset/texts/{video_id}.aligned.tsv",
-                "artifact_uri": "shared://artifacts/text/v1",
-                "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
-                "base_name_prefix": f"{args.tag}-{video_id}",
-                "fps": args.fps,
-            },
-            timeout=600,
-        ),
-    )
-
-    split_output_records: list[dict[str, Any]] = []
-    evaluation_output_records: list[dict[str, Any]] = []
-    generated_text_processed_uris: list[str] = []
-    for record in processed.get("records", []):
-        normalized_record = {
-            "base_name": record["base_name"],
-            "video_features_uri": record["video_features_uri"],
-            "text_processed_uri": record["text_processed_uri"],
-        }
-        split_output_records.append(normalized_record)
-        generated_text_processed_uris.append(record["text_processed_uri"])
-
-        if split_name == "test":
-            evaluation_record = dict(record)
-            evaluation_record["video_id"] = video_id
-            evaluation_output_records.append(evaluation_record)
-
     metadata_path = storage_root / "features" / "metadata" / f"{video_id}.vf.meta.json"
     if feature_device is None and metadata_path.exists():
         metadata = json.loads(metadata_path.read_text())
@@ -472,9 +494,126 @@ def process_video_pipeline(
 
     return {
         "feature_device": feature_device,
+    }
+
+
+def process_split_text_video(
+    split_name: str,
+    video_id: str,
+    args: argparse.Namespace,
+    dataset_root: Path,
+    storage_root: Path,
+    phase_stats: dict[str, dict[str, Any]],
+    timeline_rows: list[dict[str, Any]],
+    workflow_started_at: float,
+    stats_lock: threading.Lock,
+) -> dict[str, Any]:
+    alignment_path = dataset_root / "texts" / f"{video_id}.aligned.tsv"
+
+    if split_name == "test":
+        processed = run_timed_phase(
+            phase_stats,
+            timeline_rows,
+            workflow_started_at,
+            "text_processing",
+            PHASE_SERVICES["text_processing"],
+            args.stats_interval_sec,
+            stats_lock,
+            lambda: json_request(
+                "POST",
+                f"{args.base_url}:{SERVICE_PORTS['text-processing-service']}/jobs/process-aligned-text",
+                payload={
+                    "input_alignment_uri": f"file:///app/dataset/texts/{video_id}.aligned.tsv",
+                    "artifact_uri": "shared://artifacts/text/v1",
+                    "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
+                    "base_name_prefix": f"{args.tag}-{video_id}",
+                    "fps": args.fps,
+                },
+                timeout=600,
+            ),
+        )
+
+        split_output_records: list[dict[str, Any]] = []
+        evaluation_output_records: list[dict[str, Any]] = []
+        generated_text_processed_uris: list[str] = []
+        for record in processed.get("records", []):
+            split_output_records.append(
+                {
+                    "base_name": record["base_name"],
+                    "video_features_uri": record["video_features_uri"],
+                    "text_processed_uri": record["text_processed_uri"],
+                }
+            )
+            generated_text_processed_uris.append(record["text_processed_uri"])
+
+            evaluation_record = dict(record)
+            evaluation_record["video_id"] = video_id
+            evaluation_output_records.append(evaluation_record)
+
+        return {
+            "split_records": split_output_records,
+            "evaluation_records": evaluation_output_records,
+            "generated_text_processed_uris": generated_text_processed_uris,
+            "generated_raw_text_paths": [],
+        }
+
+    rows = parse_alignment_rows(alignment_path, fps=args.fps)
+    split_output_records: list[dict[str, Any]] = []
+    generated_text_processed_uris: list[str] = []
+    generated_raw_text_paths: list[Path] = []
+
+    for row in rows:
+        base_name = f"{args.tag}-{video_id}-e{row['row_index'] + 1}"
+        raw_text_path, input_text_uri = write_generated_text_query(
+            storage_root=storage_root,
+            tag=args.tag,
+            split_name=split_name,
+            base_name=base_name,
+            query_text=row["query_text"],
+        )
+        generated_raw_text_paths.append(raw_text_path)
+
+        processed = run_timed_phase(
+            phase_stats,
+            timeline_rows,
+            workflow_started_at,
+            "text_processing",
+            PHASE_SERVICES["text_processing"],
+            args.stats_interval_sec,
+            stats_lock,
+            lambda: json_request(
+                "POST",
+                f"{args.base_url}:{SERVICE_PORTS['text-processing-service']}/jobs/process-text",
+                payload={
+                    "input_text_uri": input_text_uri,
+                    "artifact_uri": "shared://artifacts/text/v1",
+                    "start_time": row["start_time"],
+                    "end_time": row["end_time"],
+                    "base_name": base_name,
+                    "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
+                },
+                timeout=600,
+            ),
+        )
+        metadata = processed.get("metadata", {})
+        text_processed_uri = metadata.get("text_processed_uri")
+        if not isinstance(text_processed_uri, str):
+            raise RuntimeError(f"text processing did not return text_processed_uri for {base_name}")
+
+        split_output_records.append(
+            {
+                "base_name": base_name,
+                "video_features_uri": f"shared://features/visual/{video_id}.vf.pt",
+                "text_processed_uri": text_processed_uri,
+            }
+        )
+        generated_text_processed_uris.append(text_processed_uri)
+
+    return {
         "split_records": split_output_records,
-        "evaluation_records": evaluation_output_records,
+        "evaluation_records": [],
         "generated_text_processed_uris": generated_text_processed_uris,
+        "generated_raw_text_paths": generated_raw_text_paths,
     }
 
 
@@ -836,7 +975,7 @@ def main() -> int:
         "--request-concurrency",
         type=int,
         default=10,
-        help="Maximum number of per-video preprocess/text-processing pipelines to run concurrently.",
+        help="Maximum number of per-video workers to run concurrently within each staged split pass.",
     )
     parser.add_argument(
         "--stats-interval-sec",
@@ -909,6 +1048,7 @@ def main() -> int:
     run_root.mkdir(parents=True, exist_ok=True)
 
     generated_text_processed_uris: list[str] = []
+    generated_raw_text_paths: list[Path] = []
     phase_stats: dict[str, dict[str, Any]] = {}
     timeline_rows: list[dict[str, Any]] = []
     stats_lock = threading.Lock()
@@ -944,8 +1084,7 @@ def main() -> int:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = {
                     video_id: executor.submit(
-                        process_video_pipeline,
-                        split_name,
+                        process_visual_video,
                         video_id,
                         args,
                         storage_root,
@@ -959,13 +1098,38 @@ def main() -> int:
                 ordered_results = {video_id: futures[video_id].result() for video_id in split_ids}
 
             for video_id in split_ids:
-                video_result = ordered_results[video_id]
-                feature_device = video_result.get("feature_device")
+                feature_device = ordered_results[video_id].get("feature_device")
                 if feature_device is not None:
                     feature_devices[video_id] = feature_device
 
+        for split_name, split_ids in [("train", train_ids), ("val", val_ids), ("test", test_ids)]:
+            if not split_ids:
+                continue
+
+            max_workers = max(1, min(args.request_concurrency, len(split_ids)))
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {
+                    video_id: executor.submit(
+                        process_split_text_video,
+                        split_name,
+                        video_id,
+                        args,
+                        dataset_root,
+                        storage_root,
+                        phase_stats,
+                        timeline_rows,
+                        workflow_started_at,
+                        stats_lock,
+                    )
+                    for video_id in split_ids
+                }
+                ordered_results = {video_id: futures[video_id].result() for video_id in split_ids}
+
+            for video_id in split_ids:
+                video_result = ordered_results[video_id]
                 split_records[split_name].extend(video_result["split_records"])
                 generated_text_processed_uris.extend(video_result["generated_text_processed_uris"])
+                generated_raw_text_paths.extend(video_result.get("generated_raw_text_paths", []))
 
                 if split_name == "test":
                     evaluation_records.extend(video_result["evaluation_records"])
@@ -1114,6 +1278,14 @@ def main() -> int:
             "feature_devices": feature_devices,
             "feature_gpu_required": args.require_feature_gpu,
             "feature_recompute_forced": args.force_feature_recompute,
+            "workflow_stage_order": [
+                "visual_preprocessing_and_feature_extraction:train",
+                "visual_preprocessing_and_feature_extraction:val",
+                "visual_preprocessing_and_feature_extraction:test",
+                "text_processing:train",
+                "text_processing:val",
+                "text_processing:test_via_process_aligned_text",
+            ],
             "training_device": training_response["metadata"].get("device"),
             "iterations_completed": training_response["metadata"].get("iterations_completed"),
             "model_uri": training_response["metadata"].get("model_uri"),
@@ -1159,6 +1331,7 @@ def main() -> int:
         if args.cleanup:
             cleanup_shared_paths(candidate_shared_paths(storage_root, selected_video_ids), preexisting)
             cleanup_text_processed_uris(storage_root, generated_text_processed_uris)
+            remove_paths(generated_raw_text_paths)
             for path in [
                 train_split_path,
                 val_split_path,

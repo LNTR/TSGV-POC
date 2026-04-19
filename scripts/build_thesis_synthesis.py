@@ -38,6 +38,30 @@ def status_for(summary: dict[str, Any]) -> str:
 
 
 def headline_number_for(summary: dict[str, Any]) -> str:
+    services = summary.get("services")
+    if isinstance(services, list) and summary.get("status") == "complete":
+        if all(isinstance(item, dict) and "time_to_first_scale_up_sec" in item for item in services):
+            values = [
+                float(item["time_to_first_scale_up_sec"])
+                for item in services
+                if isinstance(item, dict) and isinstance(item.get("time_to_first_scale_up_sec"), (int, float))
+            ]
+            if values:
+                return f"time_to_first_scale_up_sec: {min(values)}"
+
+        hpa_stage_values: list[float] = []
+        for item in services:
+            if not isinstance(item, dict):
+                continue
+            hpa_enabled = item.get("hpa_enabled", {})
+            if not isinstance(hpa_enabled, dict):
+                continue
+            for stage in hpa_enabled.get("stage_results", []):
+                if isinstance(stage, dict) and isinstance(stage.get("throughput_rps"), (int, float)):
+                    hpa_stage_values.append(float(stage["throughput_rps"]))
+        if hpa_stage_values:
+            return f"max_hpa_throughput_rps: {max(hpa_stage_values)}"
+
     if "smoke_checks_passed" in summary:
         return f"smoke_checks_passed: {summary['smoke_checks_passed']}"
 
@@ -98,6 +122,13 @@ def one_line_outcome_for(exp_name: str, summary: dict[str, Any]) -> str:
     if exp_name == "exp09_coupling_dependency_assessment":
         return "Static TGN service coupling and dependency edges were enumerated."
     if exp_name in {"exp10_kubernetes_autoscaling_behavior", "exp11_horizontal_scaling_concurrent_requests"}:
+        if status == "complete":
+            services = summary.get("services", [])
+            measured = [item.get("service") for item in services if isinstance(item, dict) and item.get("service")]
+            joined = ", ".join(str(item) for item in measured) if measured else "the target services"
+            if exp_name == "exp10_kubernetes_autoscaling_behavior":
+                return f"HPA scale-up behavior was measured for {joined}."
+            return f"Single-replica and HPA-enabled concurrency sweeps were measured for {joined}."
         reason = str(summary.get("reason", "")).strip()
         if reason:
             first_sentence = reason.split(".")[0].strip()

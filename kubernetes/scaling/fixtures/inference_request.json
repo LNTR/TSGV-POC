@@ -1,0 +1,6 @@
+{
+  "model_uri": "shared://models/manual-live-smoke.bin",
+  "video_features_uri": "shared://features/visual/s27-d34.vf.pt",
+  "text_processed_uri": "shared://text/processed/manual-live-smoke-s27-d34-e1.tp.json",
+  "top_n": 1
+}

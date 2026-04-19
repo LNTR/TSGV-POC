@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import threading
 from urllib.parse import urlparse
 
 import numpy as np
@@ -11,6 +12,24 @@ import torch
 from torchvision import transforms
 
 from .cnn_encoder import VGG16
+
+
+_VGG16_WEIGHTS_READY = False
+_VGG16_WEIGHTS_LOCK = threading.Lock()
+
+
+def ensure_vgg16_weights_available() -> None:
+    global _VGG16_WEIGHTS_READY
+    if _VGG16_WEIGHTS_READY:
+        return
+
+    # Serialize the first pretrained model construction so concurrent requests
+    # do not race to download the same checkpoint into the Torch cache.
+    with _VGG16_WEIGHTS_LOCK:
+        if _VGG16_WEIGHTS_READY:
+            return
+        VGG16(pretrained=True)
+        _VGG16_WEIGHTS_READY = True
 
 
 def resolve_uri_to_path(uri: str) -> str:
@@ -277,6 +296,7 @@ def extract_visual_features(
         ]
     )
 
+    ensure_vgg16_weights_available()
     cnn_encoder = VGG16(pretrained=True)
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
 

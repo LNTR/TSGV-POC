@@ -1,0 +1,15 @@
+# Shared storage contains local inputs, model artifacts, and generated outputs.
+videos/raw/**
+text/**
+frames/**
+features/**
+artifacts/**
+models/**
+results/**
+splits/**
+
+# Keep the storage layout and documentation.
+!README.md
+!**/
+!**/.gitkeep
+!artifacts/text/*/README.md

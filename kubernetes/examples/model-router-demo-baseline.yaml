@@ -1,0 +1,133 @@
+apiVersion: registry.tsgv.io/v1alpha1
+kind: ModelRouter
+metadata:
+  name: tsgv-router
+spec:
+  activeModel: tgn
+  models:
+    tgn:
+      services:
+        visual-preprocessing-service:
+          serviceName: tgn-visual-preprocessing-service
+          port: 8001
+          implementationName: tgn-visual-preprocessing-service
+          compatibleModels:
+            - tgn
+        visual-feature-extraction-service:
+          serviceName: tgn-visual-feature-extraction-service
+          port: 8002
+          implementationName: tgn-visual-feature-extraction-service
+          compatibleModels:
+            - tgn
+        text-processing-service:
+          serviceName: tgn-text-processing-service
+          port: 8003
+          implementationName: tgn-text-processing-service
+          compatibleModels:
+            - tgn
+        training-service:
+          serviceName: tgn-training-service
+          port: 8004
+          implementationName: tgn-training-service
+          compatibleModels:
+            - tgn
+        inference-service:
+          serviceName: tgn-inference-service
+          port: 8005
+          implementationName: tgn-inference-service
+          compatibleModels:
+            - tgn
+        evaluation-service:
+          serviceName: tgn-evaluation-service
+          port: 8006
+          implementationName: tgn-evaluation-service
+          compatibleModels:
+            - tgn
+    hybrid:
+      services:
+        visual-preprocessing-service:
+          serviceName: tgn-visual-preprocessing-service
+          port: 8001
+          implementationName: tgn-visual-preprocessing-service
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        visual-feature-extraction-service:
+          serviceName: tgn-visual-feature-extraction-service
+          port: 8002
+          implementationName: tgn-visual-feature-extraction-service
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        text-processing-service:
+          serviceName: tall-text-processing-service
+          port: 8003
+          implementationName: tall-text-processing-service
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        training-service:
+          serviceName: tgn-training-service
+          port: 8004
+          implementationName: tgn-training-service
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        inference-service:
+          serviceName: tgn-inference-service
+          port: 8005
+          implementationName: tgn-inference-service
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        evaluation-service:
+          serviceName: tgn-evaluation-service
+          port: 8006
+          implementationName: tgn-evaluation-service
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+    tall:
+      services:
+        visual-preprocessing-service:
+          serviceName: tall-visual-preprocessing-service
+          port: 8001
+          implementationName: tall-visual-preprocessing-service
+          compatibleModels:
+            - tall
+        visual-feature-extraction-service:
+          serviceName: tall-visual-feature-extraction-service
+          port: 8002
+          implementationName: tall-visual-feature-extraction-service
+          compatibleModels:
+            - tall
+        text-processing-service:
+          serviceName: tall-text-processing-service
+          port: 8003
+          implementationName: tall-text-processing-service
+          compatibleModels:
+            - tall
+        training-service:
+          serviceName: tall-training-service
+          port: 8004
+          implementationName: tall-training-service
+          compatibleModels:
+            - tall
+        inference-service:
+          serviceName: tall-inference-service
+          port: 8005
+          implementationName: tall-inference-service
+          compatibleModels:
+            - tall
+        evaluation-service:
+          serviceName: tall-evaluation-service
+          port: 8006
+          implementationName: tall-evaluation-service
+          compatibleModels:
+            - tall

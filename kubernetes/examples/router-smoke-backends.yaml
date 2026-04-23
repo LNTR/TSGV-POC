@@ -24,22 +24,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: foobar-backend
+  name: tall-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: foobar-backend
+      app: tall-backend
   template:
     metadata:
       labels:
-        app: foobar-backend
+        app: tall-backend
     spec:
       containers:
         - name: http-echo
           image: hashicorp/http-echo:1.0.0
           args:
-            - "-text=foobar-backend"
+            - "-text=tall-backend"
             - "-listen=:5678"
           ports:
             - containerPort: 5678
@@ -119,59 +119,71 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: foobar-visual-preprocessing-service
+  name: tall-visual-preprocessing-service
 spec:
   selector:
-    app: foobar-backend
+    app: tall-backend
   ports:
     - name: http
-      port: 9001
+      port: 8001
       targetPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: foobar-visual-feature-extraction-service
+  name: tall-visual-feature-extraction-service
 spec:
   selector:
-    app: foobar-backend
+    app: tall-backend
   ports:
     - name: http
-      port: 9002
+      port: 8002
       targetPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: foobar-training-service
+  name: tall-text-processing-service
 spec:
   selector:
-    app: foobar-backend
+    app: tall-backend
   ports:
     - name: http
-      port: 9004
+      port: 8003
       targetPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: foobar-inference-service
+  name: tall-training-service
 spec:
   selector:
-    app: foobar-backend
+    app: tall-backend
   ports:
     - name: http
-      port: 9005
+      port: 8004
       targetPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: foobar-evaluation-service
+  name: tall-inference-service
 spec:
   selector:
-    app: foobar-backend
+    app: tall-backend
   ports:
     - name: http
-      port: 9006
+      port: 8005
+      targetPort: 5678
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tall-evaluation-service
+spec:
+  selector:
+    app: tall-backend
+  ports:
+    - name: http
+      port: 8006
       targetPort: 5678

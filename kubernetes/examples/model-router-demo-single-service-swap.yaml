@@ -1,0 +1,91 @@
+apiVersion: registry.tsgv.io/v1alpha1
+kind: ModelRouter
+metadata:
+  name: tsgv-router
+spec:
+  activeModel: hybrid
+  models:
+    tgn:
+      services:
+        visual-preprocessing-service:
+          serviceName: tgn-visual-preprocessing-service
+          port: 8001
+        visual-feature-extraction-service:
+          serviceName: tgn-visual-feature-extraction-service
+          port: 8002
+        text-processing-service:
+          serviceName: tgn-text-processing-service
+          port: 8003
+        training-service:
+          serviceName: tgn-training-service
+          port: 8004
+        inference-service:
+          serviceName: tgn-inference-service
+          port: 8005
+        evaluation-service:
+          serviceName: tgn-evaluation-service
+          port: 8006
+    hybrid:
+      services:
+        visual-preprocessing-service:
+          serviceName: tgn-visual-preprocessing-service
+          port: 8001
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        visual-feature-extraction-service:
+          serviceName: tgn-visual-feature-extraction-service
+          port: 8002
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        text-processing-service:
+          serviceName: tall-text-processing-service
+          port: 8003
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        training-service:
+          serviceName: tgn-training-service
+          port: 8004
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        inference-service:
+          serviceName: tgn-inference-service
+          port: 8005
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+        evaluation-service:
+          serviceName: tgn-evaluation-service
+          port: 8006
+          compatibleModels:
+            - tgn
+            - hybrid
+          shared: true
+    tall:
+      services:
+        visual-preprocessing-service:
+          serviceName: tall-visual-preprocessing-service
+          port: 8001
+        visual-feature-extraction-service:
+          serviceName: tall-visual-feature-extraction-service
+          port: 8002
+        text-processing-service:
+          serviceName: tall-text-processing-service
+          port: 8003
+        training-service:
+          serviceName: tall-training-service
+          port: 8004
+        inference-service:
+          serviceName: tall-inference-service
+          port: 8005
+        evaluation-service:
+          serviceName: tall-evaluation-service
+          port: 8006

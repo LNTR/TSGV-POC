@@ -1,0 +1,19 @@
+{
+  "logical_service": "text-processing-service",
+  "router_name": "tsgv-router",
+  "namespace": "default",
+  "active_model": "tall",
+  "alias_host": "text-processing-service",
+  "alias_url": "http://text-processing-service:8003",
+  "compatible_models": [
+    "tall"
+  ],
+  "created_at": "2026-04-18T16:53:34Z",
+  "external_name": "tall-text-processing-service.default.svc.cluster.local",
+  "implementation_name": "tall-text-processing-service",
+  "shared": false,
+  "target_namespace": "default",
+  "target_port": 8003,
+  "target_service": "tall-text-processing-service",
+  "updated_at": "2026-04-18T16:53:34Z"
+}

@@ -1,0 +1,5 @@
+find contracts -maxdepth 1 -type f -name '*.yaml' -print
+rg -l "from service_registry import build_service_lifespan" TGN/implementation | sort
+rg -n "kind: ModelRouter|apiVersion: registry.tsgv.io/v1alpha1" kubernetes/examples kubernetes/manifests/modelrouter-crd.yaml
+rg -n "kindName\s*=\s+"ModelRouter"|routePlural\s*=\s+"modelrouters"" kubernetes/operator/cmd/main.go
+python3 scripts/measure_tgn_reuse.py --output TGN-smoke/exp07_reuse_checks/summary.json

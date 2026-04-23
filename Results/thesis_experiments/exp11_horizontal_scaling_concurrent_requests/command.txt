@@ -1,0 +1,6 @@
+
+python3 scripts/run_k8s_scaling_experiment.py \
+  --experiment exp11_horizontal_scaling_concurrent_requests \
+  --keep-cluster \
+  --skip-build \
+  --image-load-timeout-sec 180

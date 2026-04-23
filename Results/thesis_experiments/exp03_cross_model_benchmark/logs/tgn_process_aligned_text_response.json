@@ -1,0 +1,24 @@
+{
+  "status": "accepted",
+  "metadata": {
+    "source_alignment_uri": "file:///home/lakmitha/workspace/uni work/TSGV-POC/dataset/texts/s27-d34.aligned.tsv",
+    "video_features_uri": "shared://features/visual/s27-d34.vf.pt",
+    "rows_processed": 1,
+    "fps": 30.0,
+    "output_split_uri": "shared://splits/test/smoke-s27-d34.json"
+  },
+  "records": [
+    {
+      "base_name": "smoke-s27-d34-e1",
+      "text_processed_uri": "shared://text/processed/smoke-s27-d34-e1.tp.json",
+      "video_features_uri": "shared://features/visual/s27-d34.vf.pt",
+      "row_index": 0,
+      "query_text": "take out ginger from counter,cupboard using hand",
+      "start_frame": 233,
+      "end_frame": 435,
+      "start_time": 7.766666666666667,
+      "end_time": 14.5,
+      "num_token_ids": 9
+    }
+  ]
+}

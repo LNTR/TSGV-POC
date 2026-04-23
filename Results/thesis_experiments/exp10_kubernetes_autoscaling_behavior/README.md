@@ -1,0 +1,1 @@
+Run context: this bundle was imported from `Results/runs/exp10` after execution on a different laptop. The imported run recorded a `kind` cluster named `tsgv-scaling` in namespace `default`, and the invoked command is preserved in `command.txt`. Hostname, operating-system details, and GPU model were not captured in the transferred bundle, so they are not restated here.

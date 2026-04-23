@@ -1,0 +1,9 @@
+{
+  "status": "deferred",
+  "reason": "The upstream monolithic TGN baseline was not cloned or run in this smoke-only pass. The checkout did not provide a pinned upstream repository URL, commit, or tag for the baseline, so no comparable wall-clock, memory, or LOC measurement was taken.",
+  "wallclock_sec": "not_run",
+  "peak_memory_mib": "not_run",
+  "loc_total": "not_run",
+  "setup_notes": "not_run",
+  "commit_or_tag": "not_run"
+}

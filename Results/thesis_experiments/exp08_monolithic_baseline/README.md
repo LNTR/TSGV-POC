@@ -1,0 +1,1 @@
+Run context: 2026-04-18 on host `ucsc-ThinkPad-T470p` (`Linux 6.17.0-20-generic`) with GPU `NVIDIA GeForce 940MX`. This experiment was deferred because the required upstream monolithic baseline repository and pinned revision were not present in the checkout used for this smoke-only validation pass.

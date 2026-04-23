@@ -1,6 +1,0 @@
-TGN/implementation/evaluation-service/app/main.py
-TGN/implementation/inference-service/app/main.py
-TGN/implementation/text-processing-service/app/main.py
-TGN/implementation/training-service/app/main.py
-TGN/implementation/visual-feature-extraction-service/app/main.py
-TGN/implementation/visual-preprocessing-service/app/main.py

@@ -1,3 +1,0 @@
-GET http://text-processing-service:8003/index.html
-status_code: 200
-body: tgn-backend

@@ -1,6 +1,0 @@
-evaluation.openapi.yaml 2 ['/jobs/evaluate', '/registry/self']
-inference.openapi.yaml 2 ['/infer/ground', '/registry/self']
-text-processing.openapi.yaml 4 ['/jobs/process-aligned-text', '/jobs/process-text', '/registry/self', '/text/batch']
-training.openapi.yaml 3 ['/jobs/train', '/jobs/train-from-artifacts', '/registry/self']
-visual-feature-extraction.openapi.yaml 2 ['/jobs/features', '/registry/self']
-visual-preprocessing.openapi.yaml 2 ['/jobs/preprocess', '/registry/self']

@@ -1,45 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tgn-backend
+  name: tgn-visual-preprocessing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: tgn-backend
+      app: tgn-visual-preprocessing-service
   template:
     metadata:
       labels:
-        app: tgn-backend
+        app: tgn-visual-preprocessing-service
+        app.kubernetes.io/part-of: router-smoke-demo
     spec:
       containers:
         - name: http-echo
           image: hashicorp/http-echo:1.0.0
           args:
-            - "-text=tgn-backend"
-            - "-listen=:5678"
-          ports:
-            - containerPort: 5678
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: tall-backend
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: tall-backend
-  template:
-    metadata:
-      labels:
-        app: tall-backend
-    spec:
-      containers:
-        - name: http-echo
-          image: hashicorp/http-echo:1.0.0
-          args:
-            - "-text=tall-backend"
+            - "-text=tgn-visual-preprocessing-service"
             - "-listen=:5678"
           ports:
             - containerPort: 5678
@@ -48,141 +28,451 @@ apiVersion: v1
 kind: Service
 metadata:
   name: tgn-visual-preprocessing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tgn-backend
+    app: tgn-visual-preprocessing-service
   ports:
     - name: http
       port: 8001
       targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgn-visual-feature-extraction-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tgn-visual-feature-extraction-service
+  template:
+    metadata:
+      labels:
+        app: tgn-visual-feature-extraction-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tgn-visual-feature-extraction-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: tgn-visual-feature-extraction-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tgn-backend
+    app: tgn-visual-feature-extraction-service
   ports:
     - name: http
       port: 8002
       targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgn-text-processing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tgn-text-processing-service
+  template:
+    metadata:
+      labels:
+        app: tgn-text-processing-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tgn-text-processing-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: tgn-text-processing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tgn-backend
+    app: tgn-text-processing-service
   ports:
     - name: http
       port: 8003
       targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgn-training-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tgn-training-service
+  template:
+    metadata:
+      labels:
+        app: tgn-training-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tgn-training-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: tgn-training-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tgn-backend
+    app: tgn-training-service
   ports:
     - name: http
       port: 8004
       targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgn-inference-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tgn-inference-service
+  template:
+    metadata:
+      labels:
+        app: tgn-inference-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tgn-inference-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: tgn-inference-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tgn-backend
+    app: tgn-inference-service
   ports:
     - name: http
       port: 8005
       targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tgn-evaluation-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tgn-evaluation-service
+  template:
+    metadata:
+      labels:
+        app: tgn-evaluation-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tgn-evaluation-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: tgn-evaluation-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tgn-backend
+    app: tgn-evaluation-service
   ports:
     - name: http
       port: 8006
       targetPort: 5678
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tall-visual-preprocessing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tall-visual-preprocessing-service
+  template:
+    metadata:
+      labels:
+        app: tall-visual-preprocessing-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tall-visual-preprocessing-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: tall-visual-preprocessing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tall-backend
+    app: tall-visual-preprocessing-service
   ports:
     - name: http
       port: 8001
       targetPort: 5678
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tall-visual-feature-extraction-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tall-visual-feature-extraction-service
+  template:
+    metadata:
+      labels:
+        app: tall-visual-feature-extraction-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tall-visual-feature-extraction-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: tall-visual-feature-extraction-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tall-backend
+    app: tall-visual-feature-extraction-service
   ports:
     - name: http
       port: 8002
       targetPort: 5678
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tall-text-processing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tall-text-processing-service
+  template:
+    metadata:
+      labels:
+        app: tall-text-processing-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tall-text-processing-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: tall-text-processing-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tall-backend
+    app: tall-text-processing-service
   ports:
     - name: http
       port: 8003
       targetPort: 5678
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tall-training-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tall-training-service
+  template:
+    metadata:
+      labels:
+        app: tall-training-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tall-training-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: tall-training-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tall-backend
+    app: tall-training-service
   ports:
     - name: http
       port: 8004
       targetPort: 5678
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tall-inference-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tall-inference-service
+  template:
+    metadata:
+      labels:
+        app: tall-inference-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tall-inference-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: tall-inference-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tall-backend
+    app: tall-inference-service
   ports:
     - name: http
       port: 8005
       targetPort: 5678
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tall-evaluation-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tall-evaluation-service
+  template:
+    metadata:
+      labels:
+        app: tall-evaluation-service
+        app.kubernetes.io/part-of: router-smoke-demo
+    spec:
+      containers:
+        - name: http-echo
+          image: hashicorp/http-echo:1.0.0
+          args:
+            - "-text=tall-evaluation-service"
+            - "-listen=:5678"
+          ports:
+            - containerPort: 5678
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: tall-evaluation-service
+  labels:
+    app.kubernetes.io/part-of: router-smoke-demo
 spec:
   selector:
-    app: tall-backend
+    app: tall-evaluation-service
   ports:
     - name: http
       port: 8006
